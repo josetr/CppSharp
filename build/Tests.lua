@@ -1,5 +1,59 @@
 -- Tests/examples helpers
 
+require('gmake2')
+
+-- HACK: work around gmake(2) ignoring tokens such as %{cfg.buildcfg}
+-- https://github.com/premake/premake-core/issues/1557
+premake.override(premake.modules.gmake2, "csSources",
+function(_, prj)
+  for cfg in premake.project.eachconfig(prj) do
+	_x('ifeq ($(config),%s)', cfg.shortname)
+	_p('SOURCES += \\')
+	premake.modules.gmake2.cs.listsources(prj, function(node)
+	  local fcfg = premake.fileconfig.getconfig(node, cfg)
+	  local info = premake.tools.dotnet.fileinfo(fcfg)
+	  if info.action == "Compile" then
+		return node.relpath
+	  end
+	end)
+	_p('')
+	_p('endif')
+	_p('')
+  end
+end)
+
+premake.override(premake.modules.gmake2, "csResponseRules",
+function(_, prj)
+  local toolset = premake.tools.dotnet
+  local ext = premake.modules.gmake2.getmakefilename(prj, true)
+  local makefile = path.getname(premake.filename(prj, ext))
+  local response = premake.modules.gmake2.cs.getresponsefilename(prj)
+
+  _p('$(RESPONSE): %s', makefile)
+  _p('\t@echo Generating response file', prj.name)
+
+  _p('ifeq (posix,$(SHELLTYPE))')
+	  _x('\t$(SILENT) rm -f $(RESPONSE)')
+  _p('else')
+	  _x('\t$(SILENT) if exist $(RESPONSE) del %s', path.translate(response, '\\'))
+  _p('endif')
+   _p('')
+
+  local sep = os.istarget("windows") and "\\" or "/"
+  for cfg in premake.project.eachconfig(prj) do
+	_x('ifeq ($(config),%s)', cfg.shortname)
+	premake.modules.gmake2.cs.listsources(prj, function(node)
+	  local fcfg = premake.fileconfig.getconfig(node, cfg)
+	  local info = premake.tools.dotnet.fileinfo(fcfg)
+	  if info.action == "Compile" then
+		_x('\t@echo %s >> $(RESPONSE)', path.translate(node.relpath, sep))
+	  end
+	end)
+	_p('endif')
+	_p('')
+  end
+end)
+
 function SetupExampleProject()
   kind "ConsoleApp"
   language "C#"  
@@ -184,8 +238,8 @@ function SetupTestProjectsCSharp(name, depends, extraFiles, suffix)
 
     files
     {
-      path.join(gendir, name, nm .. ".cs"),
-      path.join(gendir, name, str .. ".cs")
+      path.join(gendir, nm .. ".cs"),
+      path.join(gendir, str .. ".cs")
     }
     vpaths { ["*"] = "*" }
 
@@ -240,16 +294,16 @@ function SetupTestProjectsCLI(name, extraFiles, suffix)
 
     files
     {
-      path.join(gendir, name, nm .. ".cpp"),
-      path.join(gendir, name, nm .. ".h")
+      path.join(gendir, nm .. ".cpp"),
+      path.join(gendir, nm .. ".h")
     }
     if extraFiles ~= nil then
       for _, file in pairs(extraFiles) do
         if suffix ~= nil then
           file = file .. suffix  
         end
-        files { path.join(gendir, name, file .. ".cpp") }
-        files { path.join(gendir, name, file .. ".h") }
+        files { path.join(gendir, file .. ".cpp") }
+        files { path.join(gendir, file .. ".h") }
       end
     end
     vpaths { ["*"] = "*" }

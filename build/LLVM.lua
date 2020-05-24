@@ -43,6 +43,7 @@ function SetupLLVMIncludes()
       includedirs
       {
         path.join(LLVMRootDirDebug, "include"),
+        path.join(LLVMRootDirDebug, "lld/include"),
         path.join(LLVMRootDirDebug, "clang/include"),
         path.join(LLVMRootDirDebug, "clang/lib"),
         path.join(LLVMRootDirDebug, "build/include"),
@@ -53,6 +54,7 @@ function SetupLLVMIncludes()
       includedirs
       {
         path.join(LLVMRootDirRelease, "include"),
+        path.join(LLVMRootDirRelease, "lld/include"),
         path.join(LLVMRootDirRelease, "clang/include"),
         path.join(LLVMRootDirRelease, "clang/lib"),
         path.join(LLVMRootDirRelease, "build/include"),
@@ -63,6 +65,7 @@ function SetupLLVMIncludes()
     includedirs
     {
       path.join(LLVMRootDir, "include"),
+      path.join(LLVMRootDir, "lld/include"),
       path.join(LLVMRootDir, "clang/include"),
       path.join(LLVMRootDir, "clang/lib"),
       path.join(LLVMBuildDir, "include"),
@@ -197,7 +200,17 @@ function SetupLLVMLibs()
       "LLVMBinaryFormat",
       "LLVMSupport",
       "LLVMDemangle",
-      "LLVMHelloNew"
+      "LLVMHelloNew",
+      "lldCommon",
+      "lldCore",
+      "lldCOFF",
+      "lldMinGW",
+      "lldELF",
+      "lldDriver",
+      "lldReaderWriter",
+      "lldYAML",
+      "lldMachO",
+      "lldMachO2"
     }
     
   filter(c)

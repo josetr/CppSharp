@@ -76,7 +76,7 @@ public:
         EmptyEnum2
     };
 
-    class NestedAbstract
+    class DLL_API NestedAbstract
     {
     public:
         virtual ~NestedAbstract();

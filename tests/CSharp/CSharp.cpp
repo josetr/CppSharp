@@ -33,10 +33,6 @@ Foo::Foo(const Foo& other) : A(other.A), P(other.P),
 {
 }
 
-Foo::~Foo()
-{
-}
-
 int Foo::method()
 {
     return 1;
@@ -178,11 +174,6 @@ void Quux::setSetterWithDefaultOverload(Foo* value)
     _setterWithDefaultOverload = value;
 }
 
-QColor::QColor()
-{
-
-}
-
 QColor::QColor(Qt::GlobalColor color)
 {
 
@@ -241,15 +232,15 @@ int Qux::type() const
     return 0;
 }
 
+Bar::Bar() : index(0)
+{
+}
+
 Bar::Bar(Qux qux)
 {
 }
 
 Bar::Bar(Items item)
-{
-}
-
-Bar::~Bar()
 {
 }
 
@@ -311,10 +302,6 @@ ForceCreationOfInterface::~ForceCreationOfInterface()
 }
 
 Baz::Baz(Bar::Items item)
-{
-}
-
-Baz::~Baz()
 {
 }
 
@@ -513,14 +500,6 @@ TestCopyConstructorVal::TestCopyConstructorVal(const TestCopyConstructorVal& oth
     B = other.B;
 }
 
-TestRenaming::TestRenaming()
-{
-}
-
-TestRenaming::~TestRenaming()
-{
-}
-
 void TestRenaming::name()
 {
 }
@@ -532,10 +511,6 @@ void TestRenaming::Name()
 int TestRenaming::property()
 {
     return 1;
-}
-
-UsesPointerToEnum::UsesPointerToEnum()
-{
 }
 
 void UsesPointerToEnum::hasPointerToEnumInParam(Flags* flag)
@@ -877,14 +852,6 @@ AbstractWithProperty::~AbstractWithProperty()
 {
 }
 
-HasOverriddenInManaged::HasOverriddenInManaged()
-{
-}
-
-HasOverriddenInManaged::~HasOverriddenInManaged()
-{
-}
-
 void HasOverriddenInManaged::setOverriddenInManaged(Baz* value)
 {
     overriddenInManaged = value;
@@ -1052,19 +1019,7 @@ TestParamToInterfacePass::TestParamToInterfacePass() : TestParamToInterfacePassB
 {
 }
 
-HasProtectedVirtual::HasProtectedVirtual()
-{
-}
-
 void HasProtectedVirtual::protectedVirtual()
-{
-}
-
-InheritanceBuffer::InheritanceBuffer()
-{
-}
-
-InheritanceBuffer::~InheritanceBuffer()
 {
 }
 
@@ -1091,10 +1046,6 @@ TypeMappedWithOperator::TypeMappedWithOperator()
 int TypeMappedWithOperator::operator |(int i)
 {
    return 0;
-}
-
-HasPropertyWithDerivedType::HasPropertyWithDerivedType()
-{
 }
 
 void HasPropertyWithDerivedType::causeRenamingError()
@@ -1181,10 +1132,6 @@ int PassConstantArrayRef(int(&arr)[2])
     return arr[0];
 }
 
-TestComparison::TestComparison()
-{
-}
-
 bool TestComparison::operator ==(const TestComparison& other) const
 {
     return A == other.A && B == other.B;
@@ -1223,10 +1170,6 @@ AbstractOverrideFromSecondaryBase::~AbstractOverrideFromSecondaryBase()
 {
 }
 
-QObject::QObject()
-{
-}
-
 QObject::~QObject()
 {
 }
@@ -1239,10 +1182,6 @@ QPaintDevice::QPaintDevice() : test(0)
 {
 }
 
-QPaintDevice::~QPaintDevice()
-{
-}
-
 void QPaintDevice::changeVTableLayout()
 {
 }
@@ -1250,10 +1189,6 @@ void QPaintDevice::changeVTableLayout()
 QWidget::QWidget()
 {
     QApplication::instance->notify(this);
-}
-
-QWidget::~QWidget()
-{
 }
 
 void QWidget::event()
@@ -1264,10 +1199,6 @@ void QWidget::event()
 QPainter::QPainter(QPaintDevice& paintDevice)
 {
     paintDevice.test = 5;
-}
-
-QPainter::~QPainter()
-{
 }
 
 QApplication::QApplication()
@@ -1291,10 +1222,6 @@ char* HasSamePropertyInDerivedAbstractType::property()
     return 0;
 }
 
-InheritsFromHasSamePropertyInDerivedAbstractType::InheritsFromHasSamePropertyInDerivedAbstractType()
-{
-}
-
 InheritsFromHasSamePropertyInDerivedAbstractType::~InheritsFromHasSamePropertyInDerivedAbstractType()
 {
 }
@@ -1308,10 +1235,6 @@ MultipleInheritanceFieldOffsetsPrimaryBase::MultipleInheritanceFieldOffsetsPrima
 }
 
 MultipleInheritanceFieldOffsets::MultipleInheritanceFieldOffsets() : own(3)
-{
-}
-
-VirtualDtorAddedInDerived::VirtualDtorAddedInDerived()
 {
 }
 
@@ -1423,10 +1346,6 @@ TestString::TestString() : unicodeConst(L"ქართული ენა"), uni
 {
 }
 
-TestString::~TestString()
-{
-}
-
 PrimaryBaseWithAbstractWithDefaultArg::PrimaryBaseWithAbstractWithDefaultArg()
 {
 }
@@ -1527,23 +1446,7 @@ int ImplementsAbstractsFromPrimaryAndSecondary::abstractReturnsFieldInSecondaryB
     return field + 2;
 }
 
-HasBaseSetter::HasBaseSetter()
-{
-}
-
-HasBaseSetter::~HasBaseSetter()
-{
-}
-
 void HasBaseSetter::setBaseSetter(int value)
-{
-}
-
-HasGetterAndOverriddenSetter::HasGetterAndOverriddenSetter()
-{
-}
-
-HasGetterAndOverriddenSetter::~HasGetterAndOverriddenSetter()
 {
 }
 
@@ -1605,10 +1508,6 @@ ComplexArrayElement::ComplexArrayElement() : BoolField(false), IntField(0), Floa
 {
 }
 
-HasComplexArray::HasComplexArray()
-{
-}
-
 TestIndexedProperties::TestIndexedProperties() : field(0)
 {
 }
@@ -1630,14 +1529,6 @@ typedefedFuncPtr* TestDuplicateDelegate::testDuplicateDelegate(int a)
 }
 
 void InlineNamespace::FunctionInsideInlineNamespace()
-{
-}
-
-TestArrays::TestArrays()
-{
-}
-
-TestArrays::~TestArrays()
 {
 }
 
@@ -1700,19 +1591,7 @@ HasFixedArrayOfPointers::~HasFixedArrayOfPointers()
 {
 }
 
-SimpleInterface::SimpleInterface()
-{
-}
-
-SimpleInterface::~SimpleInterface()
-{
-}
-
 InterfaceTester::InterfaceTester() : interface(0)
-{
-}
-
-InterfaceTester::~InterfaceTester()
 {
 }
 
@@ -1734,14 +1613,6 @@ void* InterfaceTester::get(int n)
 void InterfaceTester::setInterface(SimpleInterface* i)
 {
     interface = i;
-}
-
-HasFunctionPtrField::HasFunctionPtrField()
-{
-}
-
-HasFunctionPtrField::~HasFunctionPtrField()
-{
 }
 
 void va_listFunction(va_list v)

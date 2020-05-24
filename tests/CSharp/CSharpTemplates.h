@@ -32,8 +32,9 @@ class DLL_API Ignored
 {
 };
 
+// TODO: this and other templates were exported to fix warnings but this breaks the symbols; find a solution
 template <typename T>
-class DLL_API IndependentFields : public T1
+class IndependentFields : public T1
 {
     typedef T Type;
 public:
@@ -143,7 +144,7 @@ class Base
 };
 
 template <typename T>
-class DLL_API DependentValueFields : public Base<T>
+class DependentValueFields : public Base<T>
 {
 public:
     class Nested;
@@ -248,7 +249,7 @@ public:
 };
 
 template <typename T>
-class DLL_API DependentPointerFields
+class DependentPointerFields
 {
 public:
     DependentPointerFields(T t = 0);
@@ -318,7 +319,7 @@ void TwoTemplateArgs<K, V>::takeDependentPtrToSecondTemplateArg(const V& v)
 }
 
 template <typename T, typename D = IndependentFields<T>>
-class DLL_API HasDefaultTemplateArgument
+class HasDefaultTemplateArgument
 {
 public:
     HasDefaultTemplateArgument();
@@ -448,6 +449,7 @@ class TemplateWithIndexer
 {
 public:
     TemplateWithIndexer();
+    ~TemplateWithIndexer();
     T& operator[](int i);
     T& operator[](const T& key);
     T& operator[](const char* string);
@@ -460,6 +462,11 @@ private:
 
 template <typename T>
 TemplateWithIndexer<T>::TemplateWithIndexer()
+{
+}
+
+template <typename T>
+TemplateWithIndexer<T>::~TemplateWithIndexer<T>()
 {
 }
 
@@ -580,8 +587,8 @@ public:
                                            TwoTemplateArgs<int*, int> p2,
                                            TwoTemplateArgs<int*, float> p3,
                                            TwoTemplateArgs<const char*, int> p4,
-                                           TwoTemplateArgs<QString, int> p5,
-                                           TwoTemplateArgs<const char*, int>::iterator p6,
+                                           TwoTemplateArgs<QString, int> p5);
+    void completeSpecializationInParameter(TwoTemplateArgs<const char*, int>::iterator p6,
                                            TwoTemplateArgs<QString, int>::iterator p7);
     VirtualTemplate<void> returnSpecializedWithVoid();
 private:
@@ -688,7 +695,7 @@ enum class UsedInTemplatedIndexer
 };
 
 template <typename T>
-class DLL_API QFlags
+class QFlags
 {
     typedef int Int;
     typedef int (*Zero);
@@ -780,36 +787,6 @@ template<> inline void* qbswap<1>(const void *source, size_t count, void *dest) 
 {
     return 0;
 }
-
-// force the symbols for the template instantiations because we do not have the auto-compilation for the generated C++ source
-template class DLL_API IndependentFields<int>;
-template class DLL_API IndependentFields<bool>;
-template class DLL_API IndependentFields<T1>;
-template class DLL_API IndependentFields<const T1>;
-template class DLL_API IndependentFields<std::string>;
-template class DLL_API Base<int>;
-template class DLL_API DependentValueFields<int>;
-template class DLL_API DependentValueFields<int*>;
-template class DLL_API DependentValueFields<float>;
-template class DLL_API DependentPointerFields<float>;
-template class DLL_API VirtualTemplate<int>;
-template class DLL_API VirtualTemplate<bool>;
-template class DLL_API HasDefaultTemplateArgument<int, int>;
-template class DLL_API DerivedChangesTypeName<T1>;
-template class DLL_API TemplateWithIndexer<int>;
-template class DLL_API TemplateWithIndexer<void*>;
-template class DLL_API TemplateWithIndexer<UsedInTemplatedIndexer>;
-template class DLL_API TemplateWithIndexer<T1>;
-template class DLL_API TemplateWithIndexer<T2*>;
-template class DLL_API TemplateWithIndexer<float>;
-template class DLL_API TemplateWithIndexer<const char*>;
-template class DLL_API TemplateDerivedFromRegularDynamic<RegularDynamic>;
-template class DLL_API HasCtorWithMappedToEnum<TestFlag>;
-template class DLL_API TwoTemplateArgs<int*, int*>;
-template class DLL_API TwoTemplateArgs<int*, int>;
-template class DLL_API TwoTemplateArgs<int*, float>;
-template class DLL_API TwoTemplateArgs<const char*, int>;
-template class DLL_API TwoTemplateArgs<QString, int>;
 
 class TestForwardedClassInAnotherUnit;
 

@@ -24,7 +24,6 @@ public:
     Foo(char16_t ch);
     Foo(wchar_t ch);
     Foo(const Foo& other);
-    ~Foo();
     int method();
     int operator[](int i) const;
     int operator[](unsigned int i);
@@ -114,7 +113,6 @@ public:
     Bar();
     Bar(Qux qux);
     Bar(Items item);
-    ~Bar();
     int method();
     const Foo& operator[](int i) const;
     Foo& operator[](int i);
@@ -146,8 +144,6 @@ private:
     Foo m_foo;
 };
 
-Bar::Bar() : index(0) {}
-
 class DLL_API ForceCreationOfInterface : public Foo, public Bar
 {
 public:
@@ -168,7 +164,6 @@ public:
 
     Baz();
     Baz(Bar::Items item);
-    ~Baz();
 
     int P;
 
@@ -303,8 +298,6 @@ public:
 class DLL_API TestRenaming
 {
 public:
-    TestRenaming();
-    ~TestRenaming();
     void name();
     void Name();
     int property();
@@ -322,7 +315,6 @@ enum class Flags
 class DLL_API UsesPointerToEnum
 {
 public:
-    UsesPointerToEnum();
     Flags* _flags;
     void hasPointerToEnumInParam(Flags* flag);
 };
@@ -374,7 +366,6 @@ namespace Qt
 class DLL_API QColor
 {
 public:
-    QColor();
     QColor(Qt::GlobalColor color);
 };
 
@@ -559,8 +550,6 @@ class DLL_API IgnoredTypeInheritingNonIgnoredWithNoEmptyCtor : public P
 class DLL_API HasOverriddenInManaged
 {
 public:
-    HasOverriddenInManaged();
-    ~HasOverriddenInManaged();
     void setOverriddenInManaged(Baz *value);
     int callOverriddenInManaged();
 private:
@@ -785,17 +774,12 @@ public:
 
 class DLL_API HasProtectedVirtual
 {
-public:
-    HasProtectedVirtual();
 protected:
     virtual void protectedVirtual();
 };
 
 class DLL_API InheritanceBuffer : public Foo, public HasProtectedVirtual
 {
-public:
-    InheritanceBuffer();
-    ~InheritanceBuffer();
 };
 
 class DLL_API InheritsProtectedVirtualFromSecondaryBase : public InheritanceBuffer
@@ -821,7 +805,6 @@ class HasOverrideOfHasPropertyWithDerivedType;
 class DLL_API HasPropertyWithDerivedType
 {
 public:
-    HasPropertyWithDerivedType();
     HasOverrideOfHasPropertyWithDerivedType* hasPropertyWithDerivedTypeSubclass;
     virtual void causeRenamingError();
 };
@@ -904,7 +887,6 @@ DLL_API int PassConstantArrayRef(int(&arr)[2]);
 class DLL_API TestComparison
 {
 public:
-    TestComparison();
     int A;
     float B;
     bool operator ==(const TestComparison& other) const;
@@ -944,7 +926,6 @@ public:
 class DLL_API QObject
 {
 public:
-    QObject();
     virtual ~QObject();
     virtual void event();
 };
@@ -953,7 +934,6 @@ class DLL_API QPaintDevice
 {
 public:
     QPaintDevice();
-    ~QPaintDevice();
     int test;
     virtual void changeVTableLayout();
 };
@@ -962,7 +942,6 @@ class DLL_API QWidget : public QObject, QPaintDevice
 {
 public:
     QWidget();
-    ~QWidget();
     virtual void event();
 private:
     QObject child;
@@ -972,7 +951,6 @@ class DLL_API QPainter
 {
 public:
     QPainter(QPaintDevice& paintDevice);
-    ~QPainter();
 };
 
 class DLL_API QApplication : public QObject
@@ -990,10 +968,9 @@ public:
     char* property();
 };
 
-class InheritsFromHasSamePropertyInDerivedAbstractType : public HasSamePropertyInDerivedAbstractType
+class DLL_API InheritsFromHasSamePropertyInDerivedAbstractType : public HasSamePropertyInDerivedAbstractType
 {
 public:
-    InheritsFromHasSamePropertyInDerivedAbstractType();
     virtual ~InheritsFromHasSamePropertyInDerivedAbstractType();
     virtual int property() = 0;
 };
@@ -1023,7 +1000,6 @@ public:
 class DLL_API VirtualDtorAddedInDerived : public Foo
 {
 public:
-    VirtualDtorAddedInDerived();
     virtual ~VirtualDtorAddedInDerived();
     static bool dtorCalled;
 };
@@ -1178,7 +1154,6 @@ class DLL_API TestString
 {
 public:
     TestString();
-    ~TestString();
     const wchar_t* unicodeConst;
     wchar_t* unicode;
 };
@@ -1269,16 +1244,12 @@ private:
 class DLL_API HasBaseSetter
 {
 public:
-    HasBaseSetter();
-    ~HasBaseSetter();
     virtual void setBaseSetter(int value);
 };
 
 class DLL_API HasGetterAndOverriddenSetter : public HasBaseSetter
 {
 public:
-    HasGetterAndOverriddenSetter();
-    ~HasGetterAndOverriddenSetter();
     void setBaseSetter(int value);
     int baseSetter();
 protected:
@@ -1337,7 +1308,6 @@ struct DLL_API ComplexArrayElement
 
 struct DLL_API HasComplexArray
 {
-    HasComplexArray();
     ComplexArrayElement complexArray[ARRAY_LENGTH_MACRO];
 };
 
@@ -1383,8 +1353,6 @@ inline namespace InlineNamespace
 class DLL_API TestArrays
 {
 public:
-    TestArrays();
-    ~TestArrays();
     int takeArrays(Foo* arrayOfPointersToObjects[], int arrayOfPrimitives[], Foo arrayOfObjects[]) const;
     int takeArrays(Foo* fixedArrayOfPointersToObjects[3], int fixedArrayOfPrimitives[4],
                    int* fixedArrayOfPointersToPrimitives[5]) const;
@@ -1419,8 +1387,6 @@ static int FOOBAR_CONSTANT = 42;
 class DLL_API SimpleInterface
 {
 public:
-    SimpleInterface();
-    ~SimpleInterface();
     virtual int size() const = 0;
     virtual int capacity() const = 0;
     virtual void* get(int n) = 0;
@@ -1430,7 +1396,6 @@ class DLL_API InterfaceTester
 {
 public:
     InterfaceTester();
-    ~InterfaceTester();
     int capacity();
     int size();
     void* get(int n);
@@ -1442,8 +1407,6 @@ private:
 class DLL_API HasFunctionPtrField
 {
 public:
-    HasFunctionPtrField();
-    ~HasFunctionPtrField();
     int (*functionPtrField)(const char*);
     int (*functionPtrTakeFunctionPtrField)(int(*TakenInFuncPtrField)());
 };
