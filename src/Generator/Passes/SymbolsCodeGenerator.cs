@@ -28,10 +28,6 @@ namespace CppSharp.Passes
 
         public override void Process()
         {
-            WriteLine("#define _LIBCPP_DISABLE_VISIBILITY_ANNOTATIONS");
-            WriteLine("#define _LIBCPP_HIDE_FROM_ABI");
-            NewLine();
-
             if (TranslationUnit.Module == Options.SystemModule)
                 WriteLine("#include <string>");
             else
@@ -50,8 +46,7 @@ namespace CppSharp.Passes
 
             if (method.Namespace is ClassTemplateSpecialization &&
                 (method.TranslationUnit.IsSystemHeader ||
-                 ((method.IsConstructor || method.IsDestructor) &&
-                  !method.IsImplicit && !method.IsDefaulted && !method.IsPure &&
+                 (!method.IsImplicit && !method.IsDefaulted && !method.IsPure &&
                   string.IsNullOrEmpty(method.Body))))
             {
                 WriteLine($"template {GetExporting()}{method.Visit(cppTypePrinter)};");
@@ -73,6 +68,16 @@ namespace CppSharp.Passes
         public override bool VisitFunctionDecl(Function function)
         {
             TakeFunctionAddress(function);
+            return true;
+        }
+
+        public override bool VisitVariableDecl(Variable variable)
+        {
+            if (!(variable.Namespace is ClassTemplateSpecialization specialization) ||
+                specialization.SpecializationKind == TemplateSpecializationKind.ExplicitSpecialization)
+                return false;
+
+            WriteLine($"template {GetExporting()}{variable.Visit(cppTypePrinter)};");
             return true;
         }
 
@@ -136,7 +141,7 @@ namespace CppSharp.Passes
                 Write($@"({string.Join(", ", method.Parameters.Select(
                     p => cppTypePrinter.VisitParameter(p)))})");
                 WriteLine($": {@namespace}({@params}) {{}} }};");
-                Write($"extern \"C\" {{ void {wrapper}({signature}) ");
+                Write($"extern \"C\" {{ {GetExporting()}void {wrapper}({signature}) ");
                 WriteLine($"{{ new ({Helpers.InstanceField}) {wrapper}{@namespace}({@params}); }} }}");
             }
             else
@@ -145,7 +150,7 @@ namespace CppSharp.Passes
                 if (method.Namespace.Access == AccessSpecifier.Protected)
                     Write($@"{{ class {wrapper}{method.Namespace.Namespace.Name} : public {
                         method.Namespace.Namespace.Visit(cppTypePrinter)} ");
-                Write($"{{ void {wrapper}({signature}) ");
+                Write($"{{ {GetExporting()}void {wrapper}({signature}) ");
                 Write($"{{ new ({Helpers.InstanceField}) {@namespace}({@params}); }} }}");
                 if (method.Namespace.Access == AccessSpecifier.Protected)
                     Write("; }");
@@ -186,7 +191,7 @@ namespace CppSharp.Passes
             if (method.Namespace.Access == AccessSpecifier.Protected)
                 Write($@"class {wrapper}{method.Namespace.Namespace.Name} : public {
                     method.Namespace.Namespace.Visit(cppTypePrinter)} {{ ");
-            Write($"void {wrapper}");
+            Write($"{GetExporting()}void {wrapper}");
             if (isProtected)
                 Write("Protected");
 
@@ -196,7 +201,7 @@ namespace CppSharp.Passes
             if (isProtected)
             {
                 NewLine();
-                Write($@"extern ""C"" {{ void {wrapper}({wrapper}* {instance}) {{ {
+                Write($@"extern ""C"" {{ {GetExporting()}void {wrapper}({wrapper}* {instance}) {{ {
                     instance}->{wrapper}Protected({instance}); }} }}");
             }
             if (method.Namespace.Access == AccessSpecifier.Protected)

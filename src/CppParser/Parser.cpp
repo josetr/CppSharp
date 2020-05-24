@@ -32,6 +32,7 @@
 #include <clang/AST/Comment.h>
 #include <clang/AST/DeclFriend.h>
 #include <clang/AST/ExprCXX.h>
+#include <clang/CodeGen/CodeGenAction.h>
 #include <clang/Lex/DirectoryLookup.h>
 #include <clang/Lex/HeaderSearch.h>
 #include <clang/Lex/Preprocessor.h>
@@ -45,6 +46,7 @@
 #include <clang/Driver/ToolChain.h>
 #include <clang/Driver/Util.h>
 #include <clang/Index/USRGeneration.h>
+#include <lld/Common/Driver.h>
 
 #include <CodeGen/TargetInfo.h>
 #include <CodeGen/CGCall.h>
@@ -418,12 +420,14 @@ std::string Parser::GetDeclMangledName(const clang::Decl* D)
     if (!MC->shouldMangleDeclName(ND) || IsDependent)
         return ND->getDeclName().getAsString();
 
+    GlobalDecl GD;
     if (const CXXConstructorDecl *CD = dyn_cast<CXXConstructorDecl>(ND))
-        MC->mangleCXXCtor(CD, Ctor_Base, Out);
+        GD = GlobalDecl(CD, Ctor_Base);
     else if (const CXXDestructorDecl *DD = dyn_cast<CXXDestructorDecl>(ND))
-        MC->mangleCXXDtor(DD, Dtor_Base, Out);
+        GD = GlobalDecl(DD, Dtor_Base);
     else
-        MC->mangleName(ND, Out);
+        GD = GlobalDecl(ND);
+    MC->mangleName(GD, Out);
 
     Out.flush();
 
@@ -3007,6 +3011,7 @@ void Parser::CompleteIfSpecializationType(const clang::QualType& QualType)
     if (TS != nullptr && TS->isIncomplete)
     {
         TS->isIncomplete = false;
+        TS->specializationKind = WalkTemplateSpecializationKind(CTS->getSpecializationKind());
         WalkRecordCXX(CTS, TS);
     }
 }
@@ -4403,11 +4408,11 @@ ParserResultKind Parser::ParseSharedLib(const std::string& File,
         // see https://bugs.llvm.org/show_bug.cgi?id=44433
         for (const auto& Symbol : MachOObjectFile->symbols())
         {
-            if (Symbol.getName().takeError())
+            if (Symbol.getName().takeError() || Symbol.getFlags().takeError())
                 return ParserResultKind::Error;
 
-            if ((Symbol.getFlags() & llvm::object::BasicSymbolRef::Flags::SF_Exported) &&
-                !(Symbol.getFlags() & llvm::object::BasicSymbolRef::Flags::SF_Undefined))
+            if ((Symbol.getFlags().get() & llvm::object::BasicSymbolRef::Flags::SF_Exported) &&
+                !(Symbol.getFlags().get() & llvm::object::BasicSymbolRef::Flags::SF_Undefined))
                 NativeLib->Symbols.push_back(Symbol.getName().get().str());
         }
         return ParserResultKind::Success;
@@ -4515,6 +4520,127 @@ ParserResult* Parser::ParseLibrary(const LinkerOptions* Opts)
     return res;
 }
 
+ParserResult* Parser::Build(const LinkerOptions* LinkerOptions, const std::string& File, bool Last)
+{
+    llvm::InitializeAllAsmPrinters();
+    Setup();
+
+    std::unique_ptr<::DiagnosticConsumer> DiagClient(new ::DiagnosticConsumer());
+    c->getDiagnostics().setClient(DiagClient.get(), false);
+
+    c->getFrontendOpts().Inputs.clear();
+    c->getFrontendOpts().Inputs.push_back(clang::FrontendInputFile(File, clang::Language::CXX));
+
+    const llvm::Triple Triple = c->getTarget().getTriple();
+    llvm::StringRef Dir(llvm::sys::path::parent_path(File));
+    llvm::SmallString<1024> Object(Dir);
+    llvm::sys::path::append(Object,
+        (Triple.isOSWindows() ? "" : "lib") + llvm::sys::path::stem(File) + ".o");
+    c->getFrontendOpts().OutputFile = std::string(Object);
+
+    llvm::LLVMContext context;
+    auto action = std::make_unique<clang::EmitObjAction>(&context);
+    if (!c->ExecuteAction(*action))
+    {
+        auto res = new ParserResult();
+        HandleDiagnostics(res);
+        return res;
+    }
+
+    std::vector<const char*> args;
+
+    switch (Triple.getOS())
+    {
+    case llvm::Triple::OSType::Win32:
+        args.push_back("-flavor link");
+        args.push_back("-subsystem:windows");
+        switch (Triple.getEnvironment())
+        {
+        case llvm::Triple::EnvironmentType::GNU:
+            lld::mingw::link(args, true, llvm::outs(), llvm::errs());
+            break;
+        case llvm::Triple::EnvironmentType::MSVC:
+        {
+            clang::driver::Driver D("", Triple.str(), c->getDiagnostics());
+            clang::driver::toolchains::MSVCToolChain TC(D, Triple, llvm::opt::InputArgList(0, 0));
+
+            std::vector<std::string> LibraryPaths;
+            LibraryPaths.push_back("-libpath:" + TC.getSubDirectoryPath(
+                clang::driver::toolchains::MSVCToolChain::SubDirectoryType::Lib));
+            std::string CRTPath;
+            if (TC.getUniversalCRTLibraryPath(CRTPath))
+                LibraryPaths.push_back("-libpath:" + CRTPath);
+            std::string WinSDKPath;
+            if (TC.getWindowsSDKLibraryPath(WinSDKPath))
+                LibraryPaths.push_back("-libpath:" + WinSDKPath);
+            for (const auto& LibraryDir : LinkerOptions->LibraryDirs)
+                LibraryPaths.push_back("-libpath:" + LibraryDir);
+            for (const auto& LibraryPath : LibraryPaths)
+                args.push_back(LibraryPath.data());
+
+            args.push_back("-dll");
+            args.push_back("libcmt.lib");
+
+            std::vector<std::string> Libraries;
+            for (const auto& Library : LinkerOptions->Libraries)
+                Libraries.push_back(Library + ".lib");
+            for (const auto& Library : Libraries)
+                args.push_back(Library.data());
+
+            args.push_back(c->getFrontendOpts().OutputFile.data());
+            llvm::SmallString<1024> Output(Dir);
+            llvm::sys::path::append(Output, llvm::sys::path::stem(File) + ".dll");
+            std::string out("-out:" + std::string(Output));
+            args.push_back(out.data());
+
+            lld::coff::link(args, false, llvm::outs(), llvm::errs());
+            break;
+        }
+        }
+        break;
+    case llvm::Triple::OSType::Linux:
+        args.push_back("-flavor gnu");
+        lld::elf::link(args, true, llvm::outs(), llvm::errs());
+        break;
+    case llvm::Triple::OSType::Darwin:
+    case llvm::Triple::OSType::MacOSX:
+        args.push_back("-flavor darwin2");
+        args.push_back("-lc++");
+        args.push_back("-lSystem");
+        args.push_back("-dylib");
+        std::string LinkingDir("-L" + Dir.str());
+        args.push_back(LinkingDir.data());
+
+        std::vector<std::string> Libraries;
+        for (const auto& Library : LinkerOptions->Libraries)
+            Libraries.push_back("-l" + Library);
+        for (const auto& Library : Libraries)
+            args.push_back(Library.data());
+
+        args.push_back(c->getFrontendOpts().OutputFile.data());
+
+        args.push_back("-o");
+        llvm::SmallString<1024> Output(Dir);
+        llvm::sys::path::append(Output, "lib" + llvm::sys::path::stem(File) + ".dylib");
+        std::string out(Output);
+        args.push_back(out.data());
+
+        lld::mach_o::link(args, false, llvm::outs(), llvm::errs());
+        break;
+    }
+
+    if (Last)
+        llvm::llvm_shutdown();
+    // 3. Pass the correct parameters - help with the regular lld at the command line if necessary
+    // 4. Do the same for Linux;
+    // 5. Do the same for macOS;
+    // 6. Convert tests to require and use the additional symbols.
+
+    auto res = new ParserResult();
+    HandleDiagnostics(res);
+    return res;
+}
+
 ParserResult* ClangParser::ParseHeader(CppParserOptions* Opts)
 {
     if (!Opts)
@@ -4552,6 +4678,16 @@ ParserResult* ClangParser::ParseLibrary(LinkerOptions* Opts)
         return nullptr;
 
     return Parser::ParseLibrary(Opts);
+}
+
+ParserResult* ClangParser::Build(CppParserOptions* Opts,
+    const LinkerOptions* LinkerOptions, const std::string& File, bool Last)
+{
+    if (!Opts)
+        return 0;
+
+    Parser Parser(Opts);
+    return Parser.Build(LinkerOptions, File, Last);
 }
 
 ParserTargetInfo* Parser::GetTargetInfo()

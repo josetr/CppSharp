@@ -522,10 +522,10 @@ namespace CppSharp.Generators.C
             var functionType = method.FunctionType.Type.Desugar() as FunctionType;
             if (functionType == null)
                 return string.Empty;
-            var returnType = method.IsConstructor || method.IsDestructor ||
+            var @return = method.IsConstructor || method.IsDestructor ||
                 method.OperatorKind == CXXOperatorKind.Conversion ||
                 method.OperatorKind == CXXOperatorKind.ExplicitConversion ?
-                string.Empty : $"{method.OriginalReturnType.Visit(this)} ";
+                new TypePrinterResult() : method.OriginalReturnType.Visit(this);
             var @class = method.Namespace.Visit(this);
             var @params = string.Join(", ", method.Parameters.Select(p => p.Visit(this)));
             var @const = (method.IsConst ? " const" : string.Empty);
@@ -551,7 +551,12 @@ namespace CppSharp.Generators.C
                     exceptionType = string.Empty;
                     break;
             }
-            return $"{returnType}{@class}::{name}({@params}){@const}{exceptionType}";
+
+            if (!string.IsNullOrEmpty(@return.Type))
+                @return.NamePrefix.Append(' ');
+            @return.NamePrefix.Append(@class).Append("::").Append(name).Append('(').Append(@params).Append(')');
+            @return.NameSuffix.Append(@const).Append(exceptionType);
+            return @return.ToString();
         }
 
         public override TypePrinterResult VisitParameterDecl(Parameter parameter)
@@ -588,10 +593,8 @@ namespace CppSharp.Generators.C
             return VisitDeclaration(item);
         }
 
-        public override TypePrinterResult VisitVariableDecl(Variable variable)
-        {
-            return VisitDeclaration(variable);
-        }
+        public override TypePrinterResult VisitVariableDecl(Variable variable) =>
+            $"{variable.Type.Visit(this)} {VisitDeclaration(variable)}";
 
         public override TypePrinterResult VisitClassTemplateDecl(ClassTemplate template)
         {

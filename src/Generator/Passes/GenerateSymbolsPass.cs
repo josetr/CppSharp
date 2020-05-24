@@ -22,7 +22,6 @@ namespace CppSharp.Passes
             VisitOptions.VisitNamespaceEvents = false;
             VisitOptions.VisitNamespaceTemplates = false;
             VisitOptions.VisitNamespaceTypedefs = false;
-            VisitOptions.VisitNamespaceVariables = false;
             VisitOptions.VisitTemplateArguments = false;
         }
 
@@ -54,7 +53,30 @@ namespace CppSharp.Passes
                 var e = new SymbolsCodeEventArgs(module);
                 SymbolsCodeGenerated?.Invoke(this, e);
                 if (string.IsNullOrEmpty(e.CustomCompiler))
+                {
+                    using (var linkerOptions = new LinkerOptions())
+                    {
+                        foreach (var libraryDir in module.Dependencies.Union(new[] { module }).SelectMany(d => d.LibraryDirs))
+                            linkerOptions.AddLibraryDirs(libraryDir);
+
+                        foreach (var library in module.Dependencies.Union(new[] { module }).SelectMany(d => d.Libraries))
+                            linkerOptions.AddLibraries(library);
+
+                        using (var result = Parser.ClangParser.Build(
+                            Context.ParserOptions, linkerOptions, path, remainingCompilationTasks == 1))
+                        {
+                            if (PrintDiagnostics(result))
+                            {
+                                compiledLibraries[module] = new CompiledLibrary
+                                {
+                                    OutputDir = Options.OutputDir,
+                                    Library = module.SymbolsLibraryName
+                                };
+                            }
+                        }
+                    }
                     RemainingCompilationTasks--;
+                }
                 else
                     InvokeCompiler(e.CustomCompiler, e.CompilerArguments,
                         e.OutputDir, module);
@@ -81,8 +103,6 @@ namespace CppSharp.Passes
             if (!base.VisitFunctionDecl(function))
                 return false;
 
-            var module = function.TranslationUnit.Module;
-
             if (function.IsGenerated)
             {
                 ASTUtils.CheckTypeForSpecialization(function.OriginalReturnType.Type,
@@ -95,8 +115,19 @@ namespace CppSharp.Passes
             if (!NeedsSymbol(function))
                 return false;
 
-            var symbolsCodeGenerator = GetSymbolsCodeGenerator(module);
-            return function.Visit(symbolsCodeGenerator);
+            Module module = function.TranslationUnit.Module;
+            return function.Visit(GetSymbolsCodeGenerator(module));
+        }
+
+        public override bool VisitVariableDecl(Variable variable)
+        {
+            if (!base.VisitVariableDecl(variable) ||
+                !(variable.Namespace is ClassTemplateSpecialization specialization) ||
+                specialization.SpecializationKind == TemplateSpecializationKind.ExplicitSpecialization)
+                return false;
+
+            Module module = variable.TranslationUnit.Module;
+            return variable.Visit(GetSymbolsCodeGenerator(module));
         }
 
         public class SymbolsCodeEventArgs : EventArgs
@@ -149,6 +180,42 @@ namespace CppSharp.Passes
             symbolsCodeGenerator.Process();
 
             return symbolsCodeGenerator;
+        }
+
+        private static bool PrintDiagnostics(ParserResult result)
+        {
+            bool success = true;
+            for (uint i = 0; i < result.DiagnosticsCount; i++)
+            {
+                var diag = result.GetDiagnostics(i);
+                switch (diag.Level)
+                {
+                    case ParserDiagnosticLevel.Ignored:
+                    case ParserDiagnosticLevel.Note:
+                        Diagnostics.Message("{0}({1},{2}): {3}: {4}",
+                            diag.FileName, diag.LineNumber, diag.ColumnNumber,
+                            diag.Level.ToString().ToLower(), diag.Message);
+                        break;
+                    case ParserDiagnosticLevel.Warning:
+                        Diagnostics.Warning("{0}({1},{2}): {3}: {4}",
+                            diag.FileName, diag.LineNumber, diag.ColumnNumber,
+                            diag.Level.ToString().ToLower(), diag.Message);
+                        break;
+                    case ParserDiagnosticLevel.Error:
+                        Diagnostics.Error("{0}({1},{2}): {3}: {4}",
+                            diag.FileName, diag.LineNumber, diag.ColumnNumber,
+                            diag.Level.ToString().ToLower(), diag.Message);
+                        success = false;
+                        break;
+                    case ParserDiagnosticLevel.Fatal:
+                        Diagnostics.Debug("{0}({1},{2}): {3}: {4}",
+                            diag.FileName, diag.LineNumber, diag.ColumnNumber,
+                            diag.Level.ToString().ToLower(), diag.Message);
+                        success = false;
+                        break;
+                }
+            }
+            return success;
         }
 
         private void InvokeCompiler(string compiler, string arguments, string outputDir, Module module)

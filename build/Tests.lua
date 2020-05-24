@@ -167,8 +167,8 @@ function SetupTestProjectsCSharp(name, depends, extraFiles, suffix)
 
     files
     {
-      path.join(gendir, name, nm .. ".cs"),
-      path.join(gendir, name, str .. ".cs")
+      path.join(gendir, nm .. ".cs"),
+      path.join(gendir, str .. ".cs")
     }
     vpaths { ["*"] = "*" }
 
@@ -218,16 +218,16 @@ function SetupTestProjectsCLI(name, extraFiles, suffix)
 
     files
     {
-      path.join(gendir, name, nm .. ".cpp"),
-      path.join(gendir, name, nm .. ".h")
+      path.join(gendir, nm .. ".cpp"),
+      path.join(gendir, nm .. ".h")
     }
     if extraFiles ~= nil then
       for _, file in pairs(extraFiles) do
         if suffix ~= nil then
           file = file .. suffix  
         end
-        files { path.join(gendir, name, file .. ".cpp") }
-        files { path.join(gendir, name, file .. ".h") }
+        files { path.join(gendir, file .. ".cpp") }
+        files { path.join(gendir, file .. ".h") }
       end
     end
     vpaths { ["*"] = "*" }
