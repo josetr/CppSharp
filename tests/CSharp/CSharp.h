@@ -5,6 +5,7 @@
 #include <vector>
 #include <limits>
 #include <string>
+#include <string_view>
 #include "AnotherUnit.h"
 #include "ExcludedUnit.hpp"
 #include "CSharpTemplates.h"
