@@ -24,6 +24,7 @@ namespace CppSharp.Tests
         {
             base.Setup(driver);
 
+            driver.ParserOptions.LanguageVersion = Parser.LanguageVersion.CPP17; 
             driver.ParserOptions.UnityBuild = true;
         }
 

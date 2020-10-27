@@ -454,8 +454,8 @@ public:
     void DefaultRefAssignedValue(const Foo& fooRef = Foo());
     void defaultEnumAssignedBitwiseOr(Flags flags = Flags::Flag1 | Flags::Flag2);
     void defaultEnumAssignedBitwiseOrShort(UntypedFlags flags = Flag1 | Flag2);
-    void defaultNonEmptyCtor(QGenericArgument arg = QGenericArgument(0));
-    void defaultNonEmptyCtorWithNullPtr(QGenericArgument arg = QGenericArgument(nullptr));
+    //void defaultNonEmptyCtor(QGenericArgument arg = QGenericArgument(0));
+    //void defaultNonEmptyCtorWithNullPtr(QGenericArgument arg = QGenericArgument(nullptr));
     QFlags<Flags> defaultMappedToEnum(const QFlags<Flags>& qFlags = Flags::Flag3);
     void defaultMappedToZeroEnum(QFlags<Flags> qFlags = 0);
     void defaultMappedToEnumAssignedWithCtor(QFlags<Flags> qFlags = QFlags<Flags>());
@@ -683,7 +683,7 @@ struct DLL_API TestPointers
     void TestDoubleCharPointers(const char** names);
     void TestTripleCharPointers(const char*** names);
 
-    const char** Names;
+    //const char** Names;
 };
 
 void TestPointers::TestDoubleCharPointers(const char** names)
@@ -1113,6 +1113,7 @@ public:
 };
 
 DLL_API extern const unsigned char variableWithFixedPrimitiveArray[2];
+DLL_API extern const int variableWithVariablePrimitiveIntArray[];
 DLL_API extern const unsigned int variableWithVariablePrimitiveArray[];
 
 class DLL_API StaticVariables {
@@ -1499,3 +1500,4 @@ DLL_API const char* TestCSharpString(const char* in, CS_OUT const char** out);
 DLL_API const wchar_t* TestCSharpStringWide(const wchar_t* in, CS_OUT const wchar_t** out);
 DLL_API const char16_t* TestCSharpString16(const char16_t* in, CS_OUT const char16_t** out);    
 DLL_API const char32_t* TestCSharpString32(const char32_t* in, CS_OUT const char32_t** out);
+DLL_API std::string_view testStringView(std::string_view s, std::string_view* sptr, std::string_view& sref);

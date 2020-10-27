@@ -75,6 +75,7 @@ Parser::Parser(CppParserOptions* Opts) : opts(Opts), index(0)
         supportedStdTypes.insert(SupportedStdType);
     supportedStdTypes.insert("allocator");
     supportedStdTypes.insert("basic_string");
+    supportedStdTypes.insert("basic_string_view");
 }
 
 LayoutField Parser::WalkVTablePointer(Class* Class,
@@ -904,7 +905,7 @@ bool Parser::IsSupported(const clang::CXXMethodDecl* MD)
     using namespace clang;
 
     return !c->getSourceManager().isInSystemHeader(MD->getBeginLoc()) ||
-        (isa<CXXConstructorDecl>(MD) && MD->getNumParams() == 0) ||
+        (isa<CXXConstructorDecl>(MD) && (MD->getNumParams() == 0 || MD->getParent()->getName() == "basic_string_view") ) ||
         isa<CXXDestructorDecl>(MD) ||
         (MD->getDeclName().isIdentifier() &&
          ((MD->getName() == "data" && MD->getNumParams() == 0 && MD->isConst()) ||

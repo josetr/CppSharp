@@ -419,7 +419,7 @@ namespace CppSharp.Generators.CSharp
                 PushBlock(BlockKind.Field);
                 if (@class.IsValueType)
                 {
-                    WriteLine("private {0}.{1} {2};", @class.Name, Helpers.InternalStruct,
+                    WriteLine("internal {0}.{1} {2};", @class.Name, Helpers.InternalStruct,
                         Helpers.InstanceField);
                     WriteLine("internal {0}.{1} {2} {{ get {{ return {3}; }} }}", @class.Name,
                         Helpers.InternalStruct, Helpers.InstanceIdentifier, Helpers.InstanceField);
@@ -543,9 +543,15 @@ namespace CppSharp.Generators.CSharp
             if (@class.IsGenerated)
             {
                 var functions = GatherClassInternalFunctions(@class);
+                var isStringView = @class.QualifiedName == "Std::BasicStringViewExtensions";
 
                 foreach (var function in functions)
+                { 
                     GenerateInternalFunction(function);
+
+                    if (isStringView && function.OriginalName == "basic_string_view")
+                        GenerateInternalFunction(function, marshalParams: false);
+                }
             }
 
             TypePrinter.PopContext();
@@ -657,14 +663,14 @@ namespace CppSharp.Generators.CSharp
             }
         }
 
-        private IEnumerable<string> GatherInternalParams(Function function, out TypePrinterResult retType)
+        private IEnumerable<string> GatherInternalParams(Function function, out TypePrinterResult retType, bool marshalParams = true)
         {
             TypePrinter.PushContext(TypePrinterContextKind.Native);
 
             retType = function.ReturnType.Visit(TypePrinter);
 
             var @params = function.GatherInternalParams(Context.ParserOptions.IsItaniumLikeAbi).Select(p =>
-                $"{p.Visit(TypePrinter)} {p.Name}").ToList();
+                $"{((marshalParams ? p.Visit(TypePrinter).ToString() : p.Type.Desugar().ToString()))} {p.Name}").ToList();
 
             TypePrinter.PopContext();
 
@@ -3247,7 +3253,7 @@ namespace CppSharp.Generators.CSharp
             return identifier.ToString();
         }
 
-        public void GenerateInternalFunction(Function function)
+        public void GenerateInternalFunction(Function function, bool marshalParams = true)
         {
             if (function.IsPure)
                 return;
@@ -3266,7 +3272,7 @@ namespace CppSharp.Generators.CSharp
                 WriteLine("[return: MarshalAs(UnmanagedType.I1)]");
 
             TypePrinterResult retType;
-            var @params = GatherInternalParams(function, out retType);
+            var @params = GatherInternalParams(function, out retType, marshalParams);
 
             WriteLine("internal static extern {0} {1}({2});", retType,
                       GetFunctionNativeIdentifier(function),

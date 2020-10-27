@@ -129,6 +129,8 @@ function SetupNativeProject()
     defines { "NDEBUG" }
     optimize "On"
     
+  cppdialect "C++17"
+
   -- Compiler-specific options
   
   filter { "action:vs*" }

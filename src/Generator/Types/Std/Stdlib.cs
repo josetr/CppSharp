@@ -258,7 +258,12 @@ namespace CppSharp.Types.Std
 
         private (Encoding Encoding, string Name) GetEncoding()
         {
-            switch (GetCharWidth())
+            return GetEncoding(Context, GetCharWidth());
+        }
+
+        public static (Encoding Encoding, string Name) GetEncoding(BindingContext Context, uint charWidth)
+        {
+            switch (charWidth)
             {
                 case 8:
                     if (Context.Options.Encoding == Encoding.ASCII)
@@ -345,6 +350,7 @@ namespace CppSharp.Types.Std
             Type type = ctx.Parameter.Type.Desugar();
             ClassTemplateSpecialization basicString = GetBasicString(type);
             var typePrinter = new CSharpTypePrinter(ctx.Context);
+
             if (!ctx.Parameter.Type.Desugar().IsAddress() &&
                 ctx.MarshalKind != MarshalKind.NativeField)
                 ctx.Return.Write($"*({typePrinter.PrintNative(basicString)}*) ");
@@ -712,6 +718,85 @@ namespace CppSharp.Types.Std
         public override Type CSharpSignatureType(TypePrinterContext ctx)
         {
             return new CILType(typeof(System.IntPtr));
+        }
+    }
+
+    [TypeMap("basic_string_view<char, char_traits<char>>", GeneratorKind = GeneratorKind.CSharp)]
+    public class StringView : TypeMap
+    {
+        public override Type CSharpSignatureType(TypePrinterContext ctx)
+        {
+            if (ctx.Kind == TypePrinterContextKind.Managed)
+                return new CILType(typeof(string));
+            ClassTemplateSpecialization basicStringView = GetBasicStringView(ctx.Type);
+            var typePrinter = new CSharpTypePrinter(null);
+            typePrinter.PushContext(TypePrinterContextKind.Native);
+            return new CustomType(basicStringView.Visit(typePrinter).Type);
+        }
+
+        public override void CSharpMarshalToNative(CSharpMarshalContext ctx)
+        {
+            if (ctx.MarshalKind == MarshalKind.NativeField)
+            {
+                ctx.Before.WriteLine($"throw new {typeof(System.NotImplementedException).FullName}();");
+                ctx.Return.Write("default");
+                return;
+            }
+
+            var type = ctx.Parameter.Type.Desugar();
+            var name = ctx.Parameter.Name;
+            var basicStringViewClass = GetBasicStringView(type);
+            var typePrinter = new CSharpTypePrinter(ctx.Context);
+            var bytes = Generator.GeneratedIdentifier($"{name}Bytes");
+            var bytesPtr = Generator.GeneratedIdentifier($"{name}BytesPtr");
+            var view = Generator.GeneratedIdentifier($"{name}StringView");
+            var viewPtr = $"new {typePrinter.IntPtrType}(&{view}.{Helpers.InstanceField})";
+            var encoding = ConstCharPointer.GetEncoding(Context, Context.TargetInfo.CharWidth);
+            var extensionClass = $"{GetQualifiedBasicStringView(basicStringViewClass)}Extensions";
+            ctx.HasCodeBlock = true;
+            ctx.Before.WriteLine($"var {view} = new {basicStringViewClass.Visit(typePrinter)}();");
+            ctx.Before.WriteLine($"var {bytes} = {name} != null ? global::{typeof(Encoding).FullName}.{encoding.Name}.GetBytes({name}) : null;");
+            ctx.Before.WriteLine($"fixed (byte* {bytesPtr} = {bytes})");
+            ctx.Before.WriteOpenBraceAndIndent();
+            ctx.Before.WriteLine($"{extensionClass}.{Helpers.InternalStruct}.{basicStringViewClass.Name}({viewPtr}, new {typePrinter.IntPtrType}({bytesPtr}), (uint)({bytes}?.Length ?? 0));");
+            ctx.Return.Write(type.IsAddress() || ctx.Parameter.IsIndirect ? $"{viewPtr}" : $"{view}.{Helpers.InstanceIdentifier}");
+        }
+
+        public override void CSharpMarshalToManaged(CSharpMarshalContext ctx)
+        {
+            var type = Type.Desugar(resolveTemplateSubstitution: false);
+            var basicStringViewClass = GetBasicStringView(type);
+            var data = basicStringViewClass.Methods.First(m => m.OriginalName == "data");
+            var typePrinter = new CSharpTypePrinter(ctx.Context);
+            var qualifiedBasicString = GetQualifiedBasicStringView(basicStringViewClass);
+            var view = Generator.GeneratedIdentifier($"{ctx.ReturnVarName}StringView");
+            var returnvarNameOrPtr = type.IsAddress() ? $"new {typePrinter.IntPtrType}(&{ctx.ReturnVarName})" : ctx.ReturnVarName;
+            ctx.Return.Write($"{qualifiedBasicString}Extensions.{data.Name}({basicStringViewClass.Visit(typePrinter)}.{Helpers.CreateInstanceIdentifier}({returnvarNameOrPtr}))");
+        }
+
+        private static string GetQualifiedBasicStringView(ClassTemplateSpecialization basicString)
+        {
+            var declContext = basicString.TemplatedDecl.TemplatedDecl;
+            var names = new Stack<string>();
+            while (!(declContext is TranslationUnit))
+            {
+                var isInlineNamespace = declContext is Namespace && ((Namespace)declContext).IsInline;
+                if (!isInlineNamespace)
+                    names.Push(declContext.Name);
+                declContext = declContext.Namespace;
+            }
+            var qualifiedBasicString = string.Join(".", names);
+            return $"global::{qualifiedBasicString}";
+        }
+
+        private static ClassTemplateSpecialization GetBasicStringView(Type type)
+        {
+            var desugared = type.Desugar();
+            var template = (desugared.GetFinalPointee() ?? desugared).Desugar();
+            var templateSpecializationType = template as TemplateSpecializationType;
+            if (templateSpecializationType != null)
+                return templateSpecializationType.GetClassTemplateSpecialization();
+            return (ClassTemplateSpecialization)((TagType)template).Declaration;
         }
     }
 }

@@ -685,13 +685,13 @@ void MethodsWithDefaultValues::defaultEnumAssignedBitwiseOrShort(UntypedFlags fl
 {
 }
 
-void MethodsWithDefaultValues::defaultNonEmptyCtor(QGenericArgument arg)
+/*void MethodsWithDefaultValues::defaultNonEmptyCtor(QGenericArgument arg)
 {
 }
 
 void MethodsWithDefaultValues::defaultNonEmptyCtorWithNullPtr(QGenericArgument arg)
 {
-}
+}*/
 
 QFlags<Flags> MethodsWithDefaultValues::defaultMappedToEnum(const QFlags<Flags>& qFlags)
 {
@@ -1813,4 +1813,11 @@ const char32_t* TestCSharpString32(const char32_t* in, const char32_t** out)
     ret = in;
     *out = ret.data();
     return ret.data();
+}
+
+std::string_view testStringView(std::string_view s, std::string_view* sptr, std::string_view& sref)
+{
+    static std::string ret;
+    ret= std::string(s) + "_test";
+    return ret;
 }

@@ -51,12 +51,16 @@ namespace CppSharp.Passes
             foreach (var specialization in @class.Specializations)
                 specialization.ExplicitlyIgnore();
 
+            if (@class.Name == "basic_string_view")
+                @class.Type = ClassType.ValueType;
+
             // we only need a few members for marshalling so strip the rest
             switch (@class.Name)
             {
                 case "basic_string":
                 case "allocator":
                 case "char_traits":
+                case "basic_string_view":
                     @class.GenerationKind = GenerationKind.Generate;
                     foreach (var specialization in from s in @class.Specializations
                                                    let arg = s.Arguments[0].Type.Type.Desugar()
@@ -64,6 +68,8 @@ namespace CppSharp.Passes
                                                    select s)
                     {
                         specialization.GenerationKind = GenerationKind.Generate;
+                        if (specialization.Name == "basic_string_view")
+                            specialization.Type = ClassType.ValueType;
                     }
                     break;
             }
