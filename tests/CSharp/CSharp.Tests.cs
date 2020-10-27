@@ -343,6 +343,17 @@ public unsafe class CSharpTests : GeneratorTestFixture
     }
 
     [Test]
+    public void TestPassObjectByValue()
+    {
+        using (var foo = new Foo())
+        {
+            foo.A = 1000;
+            CSharp.CSharp.TestPassObjectByValue(foo);
+            Assert.That(foo.A, Is.EqualTo(1000));
+        }
+    }
+
+    [Test]
     public void TestGenerationOfAnotherUnitInSameFile()
     {
         AnotherUnit.FunctionInAnotherUnit();

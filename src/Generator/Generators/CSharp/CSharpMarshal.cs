@@ -729,6 +729,11 @@ namespace CppSharp.Generators.CSharp
             else
                 paramInstance = $"{param}.{Helpers.InstanceIdentifier}";
 
+            bool isCopyConstructorAvailable = finalType.TryGetClass(out Class c) && c.Methods.Any(
+                m => m.IsCopyConstructor && (!m.IsImplicit || Context.Context.ParserOptions.IsMicrosoftAbi) && // Workaround #1456
+                m.IsGeneratedForReal &&
+                m.Parameters.First().Type.Desugar().ToString() == finalType.Desugar().ToString());
+
             if (!type.IsAddress())
             {
                 Context.Before.WriteLine($"if (ReferenceEquals({Context.Parameter.Name}, null))");
@@ -737,8 +742,20 @@ namespace CppSharp.Generators.CSharp
                         Context.Parameter.Name}"", ""Cannot be null because it is passed by value."");");
                 var realClass = @class.OriginalClass ?? @class;
                 var qualifiedIdentifier = typePrinter.PrintNative(realClass);
+
+                if (isCopyConstructorAvailable)
+                {
+                    var paramCopy = Generator.GeneratedIdentifier($"{Context.Parameter.Name}Copy");
+                    Context.Before.WriteLine($"var {paramCopy} = new {Context.Parameter.Type.Visit(typePrinter)}({Context.Parameter.Name});");
+                    Context.Return.Write($"{paramCopy}.{Helpers.InstanceIdentifier}");
+                    if (c.IsRefType)
+                        Context.Cleanup.WriteLine($"{paramCopy}.Dispose();");
+                }
+                else
+                {
+                    Context.Return.Write(paramInstance);
+                }
                 Context.ArgumentPrefix.Write($"*({qualifiedIdentifier}*) ");
-                Context.Return.Write(paramInstance);
                 return;
             }
 
@@ -752,12 +769,23 @@ namespace CppSharp.Generators.CSharp
             if (type.IsPointer())
             {
                 if (Context.Parameter.IsIndirect)
-                {
+                {                  
                     Context.Before.WriteLine($"if (ReferenceEquals({Context.Parameter.Name}, null))");
                     Context.Before.WriteLineIndent(
                         $@"throw new global::System.ArgumentNullException(""{
                             Context.Parameter.Name}"", ""Cannot be null because it is passed by value."");");
-                    Context.Return.Write(paramInstance);
+
+                    if (isCopyConstructorAvailable)
+                    {
+                        var paramCopy = Generator.GeneratedIdentifier($"{Context.Parameter.Name}Copy");
+                        Context.Before.WriteLine($"var {paramCopy} = new {Context.Parameter.Type.Visit(typePrinter)}({Context.Parameter.Name});");
+                        Context.Return.Write($"{paramCopy}.{Helpers.InstanceIdentifier}");
+                        if (c.IsRefType)
+                            Context.Cleanup.WriteLine($"{paramCopy}.Dispose();");
+                    }
+                    else {
+                        Context.Return.Write(paramInstance);
+                    }
                 }
                 else
                 {

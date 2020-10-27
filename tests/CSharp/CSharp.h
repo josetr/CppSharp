@@ -1499,3 +1499,5 @@ DLL_API const char* TestCSharpString(const char* in, CS_OUT const char** out);
 DLL_API const wchar_t* TestCSharpStringWide(const wchar_t* in, CS_OUT const wchar_t** out);
 DLL_API const char16_t* TestCSharpString16(const char16_t* in, CS_OUT const char16_t** out);    
 DLL_API const char32_t* TestCSharpString32(const char32_t* in, CS_OUT const char32_t** out);
+
+DLL_API void TestPassObjectByValue(Foo foo);

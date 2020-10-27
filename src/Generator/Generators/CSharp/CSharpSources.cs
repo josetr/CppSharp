@@ -2424,6 +2424,7 @@ namespace CppSharp.Generators.CSharp
 
         public void GenerateMethod(Method method, Class @class)
         {
+            method.IsGeneratedForReal = true;
             PushBlock(BlockKind.Method, method);
             GenerateDeclarationCommon(method);
 

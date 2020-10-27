@@ -1814,3 +1814,9 @@ const char32_t* TestCSharpString32(const char32_t* in, const char32_t** out)
     *out = ret.data();
     return ret.data();
 }
+
+void TestPassObjectByValue(Foo foo) {
+    foo.A = 500;
+}
+
+Baz& (Baz::*_1)(const Baz&) = &Baz::operator=;

@@ -163,6 +163,7 @@ namespace CppSharp.AST
         public bool IsDefaultConstructor;
         public bool IsCopyConstructor;
         public bool IsMoveConstructor;
+        public bool IsGeneratedForReal { get; set; }
 
         public MethodConversionKind Conversion { get; set; }
 
