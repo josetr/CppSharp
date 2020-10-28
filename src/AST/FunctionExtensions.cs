@@ -40,7 +40,8 @@ namespace CppSharp.AST
                         Kind = param.Kind,
                         Usage = param.Usage,
                         Name = universalDelegate ? $"arg{++i}": param.Name,
-                        Namespace = param.Namespace
+                        Namespace = param.Namespace,
+                        IsIndirect = param.IsIndirect
                     });
 
                 if (param.Kind == ParameterKind.IndirectReturnType &&

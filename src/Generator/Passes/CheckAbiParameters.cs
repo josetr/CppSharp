@@ -76,11 +76,6 @@ namespace CppSharp.Passes
                 });
             }
 
-            foreach (var param in function.Parameters.Where(p => p.IsIndirect))
-            {
-                param.QualifiedType = new QualifiedType(new PointerType(param.QualifiedType));
-            }
-
             return true;
         }
     }

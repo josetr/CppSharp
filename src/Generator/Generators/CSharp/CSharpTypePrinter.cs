@@ -568,7 +568,8 @@ namespace CppSharp.Generators.CSharp
         {
             var paramType = parameter.Type;
 
-            if (parameter.Kind == ParameterKind.IndirectReturnType)
+            if (parameter.Kind == ParameterKind.IndirectReturnType ||
+                parameter.IsIndirect)
                 return IntPtrType;
 
             Parameter = parameter;
@@ -642,6 +643,8 @@ namespace CppSharp.Generators.CSharp
                 && MarshalKind == MarshalKind.GenericDelegate)
                 typeBuilder.Append("[MarshalAs(UnmanagedType.I1)] ");
             var printedType = param.Type.Visit(this, param.QualifiedType.Qualifiers);
+            if (param.IsIndirect && MarshalKind == MarshalKind.GenericDelegate)
+                printedType = IntPtrType;
             typeBuilder.Append(printedType);
             var type = typeBuilder.ToString();
 

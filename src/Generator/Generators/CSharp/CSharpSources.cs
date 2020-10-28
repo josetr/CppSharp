@@ -2880,7 +2880,7 @@ namespace CppSharp.Generators.CSharp
                     name.Append(param.Context.ArgumentPrefix);
 
                 name.Append(param.Name);
-                names.Add(name.ToString());
+                names.Add(param.Param.IsIndirect ? $"new {TypePrinter.IntPtrType}(&{name})" : name.ToString());
             }
 
             var needsFixedThis = needsInstance && isValueType;
