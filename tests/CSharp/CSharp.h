@@ -1508,7 +1508,26 @@ struct DLL_API ConversionFunctions
     short field = 100;
 };
 
+struct DLL_API Issue1449 {
+  void* constructor_this;
+  static bool success;
+
+  Issue1449();
+  Issue1449(const Issue1449& c);
+  ~Issue1449();
+};
+
+struct DLL_API Issue1451 {
+  int a;
+  int* b;
+  static bool success;
+
+  Issue1451();
+};
+
 DLL_API const char* TestCSharpString(const char* in, CS_OUT const char** out);
 DLL_API const wchar_t* TestCSharpStringWide(const wchar_t* in, CS_OUT const wchar_t** out);
 DLL_API const char16_t* TestCSharpString16(const char16_t* in, CS_OUT const char16_t** out);    
 DLL_API const char32_t* TestCSharpString32(const char32_t* in, CS_OUT const char32_t** out);
+DLL_API bool TestObjectPassByValue(Issue1449 s);
+DLL_API bool TestObjectPassByValue(Issue1451 s);

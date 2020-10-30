@@ -1548,4 +1548,26 @@ public unsafe class CSharpTests : GeneratorTestFixture
             Assert.That((short)c, Is.EqualTo(100));
         }
     }
+
+    [Test]
+    public void TestObjectPassByValue1449()
+    {
+        using (var s = new Issue1449())
+        { 
+            Assert.IsTrue(CSharp.CSharp.TestObjectPassByValue(s));
+        }
+
+        Assert.IsTrue(Issue1449.Success);
+    }
+
+    [Test]
+    public void TestObjectPassByValue1451()
+    {
+        using (var s = new Issue1451())
+        {
+            s.A = 500;
+            Assert.IsTrue(CSharp.CSharp.TestObjectPassByValue(s));
+            Assert.That(s.A, Is.EqualTo(500));
+        }
+    }
 }

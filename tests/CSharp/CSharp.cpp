@@ -1822,3 +1822,37 @@ ConversionFunctions::operator short() { return field; }
 ConversionFunctions::operator const short*() const { return &field; }
 ConversionFunctions::operator const short&() const { return field; }
 ConversionFunctions::operator const short() const { return field; }
+
+bool Issue1449::success = true;
+
+Issue1449::Issue1449()
+{
+    constructor_this = this;
+}
+
+Issue1449::Issue1449(const Issue1449& c)
+{
+    constructor_this = this;
+}
+
+Issue1449::~Issue1449() {
+    if (constructor_this != this)
+        success = false;
+}
+
+Issue1451::Issue1451()
+{
+    a = 0;
+    b = nullptr;
+}
+
+bool TestObjectPassByValue(Issue1449 s)
+{
+    return true;
+}
+
+bool TestObjectPassByValue(Issue1451 s)
+{
+    s.a = 99999;
+    return true;
+}
