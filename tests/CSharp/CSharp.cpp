@@ -1815,6 +1815,11 @@ const char32_t* TestCSharpString32(const char32_t* in, const char32_t** out)
     return ret.data();
 }
 
+bool TestObjectPassByValue(Struct s)
+{
+    return true;
+}
+
 ConversionFunctions::ConversionFunctions() = default;
 ConversionFunctions::operator short* () { return &field; }
 ConversionFunctions::operator short& () { return field; }
