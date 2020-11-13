@@ -109,7 +109,7 @@ end
 
 gendir = libdir;
 
-msvc_buildflags = { "/MP", "/wd4267" }
+msvc_buildflags = { "/wd4267" }
 
 msvc_cpp_defines = { }
 
