@@ -208,13 +208,26 @@ function SetupTestNativeProject(name, depends)
     kind "SharedLib"
     language "C++"
 
-    files { "**.h", "**.cpp" }
+    local symbolPath = libdir .. "/" .. name .. "-symbols.cpp";
+
+    if string.find(name, "CLI") or
+      string.find(name, "Common") or
+      string.find(name, "StandardLib") then   
+        symbolPath = builddir .. "/Empty.cpp";
+        io.writefile(symbolPath, (os.ishost("windows") and "__declspec(dllexport) " or "") .. "void CppSharp_Empty_File() { }")
+    end
+
+    files { "**.h", "**.cpp", symbolPath }
     vpaths { ["*"] = "*" }
     defines { "DLL_EXPORT" }
+    
+    dependson { "CppSharp.Generator" }
 
     if depends ~= nil then
       links { depends .. ".Native" }
     end
+ 
+    includedirs { "." }
 end
 
 function LinkNUnit()

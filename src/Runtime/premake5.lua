@@ -1,7 +1,5 @@
 project "CppSharp.Runtime"
 
-  SetupManagedProject()
-
   kind "SharedLib"
   clr "Unsafe"
 
@@ -16,3 +14,6 @@ project "CppSharp.Runtime"
 
   filter { "system:macosx" }
   	defines { "LIBCXX" }
+
+  SetupManagedProject()
+  

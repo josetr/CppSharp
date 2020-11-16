@@ -1,7 +1,5 @@
 project "CppSharp"
 
-  SetupManagedProject()
-
   kind "SharedLib"
   language "C#"
   clr "Unsafe"
@@ -19,3 +17,5 @@ project "CppSharp"
 
   filter { "action:not netcore"}
     links { "System", "System.Core" }
+
+  SetupManagedProject()

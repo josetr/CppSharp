@@ -1,7 +1,5 @@
 project "CppSharp.Generator"
 
-  SetupManagedProject()
-
   kind "SharedLib"
   language "C#"
 
@@ -39,3 +37,5 @@ project "CppSharp.Generator"
     buildaction "Embed"
 
   filter {}
+  
+  SetupManagedProject()

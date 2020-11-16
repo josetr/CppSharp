@@ -1,8 +1,6 @@
 project "CppSharp.Generator.Tests"
 
   kind "SharedLib"
-  SetupManagedProject()
-
   files { "**.cs" }
   vpaths { ["*"] = "*" }
 
@@ -43,3 +41,6 @@ project "CppSharp.Generator.Tests"
       "nunit.framework",
       "NSubstitute"
     }
+
+  SetupManagedProject()
+  

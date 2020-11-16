@@ -1,7 +1,5 @@
 project "CppSharp.CLI"
 
-  SetupManagedProject()
-
   kind "ConsoleApp"
   language "C#"
 
@@ -27,3 +25,5 @@ project "CppSharp.CLI"
 
   filter { "action:netcore" }
     dotnetframework "netcoreapp2.0"
+
+  SetupManagedProject()

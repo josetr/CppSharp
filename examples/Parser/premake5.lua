@@ -6,6 +6,8 @@ project "Parser"
   debugdir "."
   
   files { "**.cs", "./*.lua" }
+  excludes { "obj/**/*.*" }
+
   links
   {
     "CppSharp",

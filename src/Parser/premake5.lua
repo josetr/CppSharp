@@ -17,8 +17,6 @@ end
 
 project "CppSharp.Parser"
 
-  SetupManagedProject()
-
   kind "SharedLib"
   language "C#"
   clr "Unsafe"
@@ -45,3 +43,5 @@ project "CppSharp.Parser"
 
   filter { "action:not netcore"}
     links { "System", "System.Core" }
+
+  SetupManagedProject()

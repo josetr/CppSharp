@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../Tests.h"
 #include "../NamespacesBase/NamespacesBase.h"
 
@@ -5,7 +7,7 @@
 // Test whether qualified names turn out right.
 namespace OverlappingNamespace
 {
-    class InDerivedLib
+    class DLL_API InDerivedLib
     {
     public:
         InDerivedLib();
@@ -93,7 +95,7 @@ namespace NamespacesBase
 {
     class DLL_API ClassInNamespaceNamedAfterDependency
     {
-    private:
-        Base base;
+    //private:
+      //  Base base;
     };
 }

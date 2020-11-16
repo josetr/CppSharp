@@ -1,5 +1,6 @@
-#include "../Tests.h"
+#pragma once
 
+#include "../Tests.h"
 
 namespace OverlappingNamespace
 {

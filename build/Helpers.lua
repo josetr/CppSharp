@@ -176,7 +176,6 @@ function SetupManagedProject()
   location ("%{wks.location}/projects")
   buildoptions {"/langversion:7.3"}
   buildoptions {"/platform:".._OPTIONS["arch"]}
-
   dotnetframework "4.7.2"
 
   if not os.istarget("macosx") then
@@ -189,6 +188,7 @@ function SetupManagedProject()
     dotnetframework "netstandard2.0"
 
   filter {}
+  excludes { "obj/**/*.*" }
 end
 
 function IncludeDir(dir)
