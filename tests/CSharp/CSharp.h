@@ -146,7 +146,7 @@ private:
     Foo m_foo;
 };
 
-Bar::Bar() : index(0) {}
+inline Bar::Bar() : index(0) {}
 
 class DLL_API ForceCreationOfInterface : public Foo, public Bar
 {
@@ -181,7 +181,7 @@ public:
     FunctionTypedef functionTypedef;
 };
 
-Baz::Baz() : P(5) {}
+inline Baz::Baz() : P(5) {}
 
 struct QArrayData
 {
@@ -237,7 +237,7 @@ private:
     Bar::Items _itemsByValue;
 };
 
-Proprietor::Proprietor() : _items(Bar::Items::Item1), _itemsByValue(Bar::Items::Item1) {}
+inline Proprietor::Proprietor() : _items(Bar::Items::Item1), _itemsByValue(Bar::Items::Item1) {}
 
 class DLL_API ComplexType
 {
@@ -288,8 +288,8 @@ struct DLL_API TestDestructors
     ~TestDestructors();
 };
 
-TestDestructors::TestDestructors() { Marker = 0xf00d; }
-TestDestructors::~TestDestructors() { Marker = 0xcafe; }
+inline TestDestructors::TestDestructors() { Marker = 0xf00d; }
+inline TestDestructors::~TestDestructors() { Marker = 0xcafe; }
 
 class DLL_API TestCopyConstructorVal
 {
@@ -585,8 +585,8 @@ struct DLL_API MI_A0
     int F;
 };
 
-MI_A0::MI_A0() : F(50) {}
-int MI_A0::get() { return F; };
+inline MI_A0::MI_A0() : F(50) {}
+inline int MI_A0::get() { return F; };
 
 struct DLL_API MI_A
 {
@@ -594,36 +594,36 @@ struct DLL_API MI_A
     virtual void v(int i = 5);
 };
 
-MI_A::MI_A() {}
-void MI_A::v(int i) {}
+inline MI_A::MI_A() {}
+inline void MI_A::v(int i) {}
 
 struct DLL_API MI_B : public MI_A
 {
     MI_B();
 };
 
-MI_B::MI_B() {}
+inline MI_B::MI_B() {}
 
 struct DLL_API MI_C : public MI_A0, public MI_B
 {
     MI_C();
 };
 
-MI_C::MI_C() {}
+inline MI_C::MI_C() {}
 
 struct DLL_API MI_A1
 {
     MI_A1();
 };
 
-MI_A1::MI_A1() {}
+inline MI_A1::MI_A1() {}
 
 struct DLL_API MI_D : public MI_A1, public MI_C
 {
     MI_D();
 };
 
-MI_D::MI_D() {}
+inline MI_D::MI_D() {}
 
 class DLL_API StructWithPrivateFields
 {
@@ -689,12 +689,12 @@ struct DLL_API TestPointers
     const char** Names;
 };
 
-void TestPointers::TestDoubleCharPointers(const char** names)
+inline void TestPointers::TestDoubleCharPointers(const char** names)
 {
 
 }
 
-void TestPointers::TestTripleCharPointers(const char*** names)
+inline void TestPointers::TestTripleCharPointers(const char*** names)
 {
 
 }
@@ -1350,12 +1350,12 @@ public:
     void* operator[](size_t n) const;
 };
 
-int TestIndexedProperties::operator[](const int& key)
+inline int TestIndexedProperties::operator[](const int& key)
 {
     return key;
 }
 
-void* TestIndexedProperties::operator[](size_t n) const
+inline void* TestIndexedProperties::operator[](size_t n) const
 {
     field = n;
     return &field;
@@ -1456,7 +1456,7 @@ DLL_API const char*& takeConstCharStarRef(const char*& c);
 DLL_API const void*& rValueReferenceToPointer(void*&& v);
 DLL_API const Foo*& takeReturnReferenceToPointer(const Foo*& foo);
 
-struct {
+struct Kotlin {
     struct {
         struct {
             int(*forIntegers)(int b, short s, unsigned int i);
@@ -1468,7 +1468,7 @@ struct {
             } Method;
         } example;
     } root;
-} kotlin;
+};
 
 typedef int boolean_t;
 DLL_API boolean_t takeTypemapTypedefParam(boolean_t b);
