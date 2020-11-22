@@ -46,3 +46,12 @@ jobs:
       - name: Test
         shell: bash
         run: build/RunTests.sh
+
+      - name: 'Upload Artifact'
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: Generated Files
+          path: |
+            build/gmake/lib/**/*.cpp
+            build/gmake/lib/**/*.cs

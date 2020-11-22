@@ -568,6 +568,11 @@ public:
     ~HasSpecializationForSecondaryBase();
 };
 
+extern template class DependentPointerFields<int>;
+extern template class DependentValueFields<bool>;
+extern template class HasDefaultTemplateArgument<int>;
+extern template class DependentValueFields<T1>;
+
 template <typename T>
 class TemplateInAnotherUnit;
 
