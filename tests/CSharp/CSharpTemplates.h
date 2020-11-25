@@ -18,6 +18,10 @@ public:
     T1(int f);
     ~T1();
     int getField() const;
+    operator double() const
+    {
+        return field;
+    }
 private:
     int field;
 };
@@ -32,8 +36,9 @@ class DLL_API Ignored
 {
 };
 
+
 template <typename T>
-class DLL_API IndependentFields : public T1
+class IndependentFields : public T1
 {
     typedef T Type;
 public:
@@ -131,7 +136,7 @@ class DerivedChangesTypeName : public IndependentFields<X>
 };
 
 template <typename T>
-class DLL_API DependentValueFieldForArray
+class DependentValueFieldForArray
 {
 private:
     T field{};
@@ -143,7 +148,7 @@ class Base
 };
 
 template <typename T>
-class DLL_API DependentValueFields : public Base<T>
+class DependentValueFields : public Base<T>
 {
 public:
     class Nested;
@@ -248,7 +253,7 @@ public:
 };
 
 template <typename T>
-class DLL_API DependentPointerFields
+class DependentPointerFields
 {
 public:
     DependentPointerFields(T t = 0);
@@ -318,7 +323,7 @@ void TwoTemplateArgs<K, V>::takeDependentPtrToSecondTemplateArg(const V& v)
 }
 
 template <typename T, typename D = IndependentFields<T>>
-class DLL_API HasDefaultTemplateArgument
+class HasDefaultTemplateArgument
 {
 public:
     HasDefaultTemplateArgument();
@@ -564,6 +569,28 @@ public:
 template <typename T>
 class TemplateInAnotherUnit;
 
+template class DLL_API IndependentFields<bool>;
+template class DLL_API HasDefaultTemplateArgument<void *, double>;
+template class DLL_API HasDefaultTemplateArgument<T1, double>;
+template class DLL_API DependentValueFields<bool>;
+template class DLL_API DependentValueFields<int*>;
+//template class DLL_API DependentValueFields<char*>;
+template class DLL_API DependentPointerFields<int>;
+template class DLL_API DependentValueFields<T1>;
+template class DLL_API DependentValueFields<T2>;
+template class DLL_API HasDefaultTemplateArgument<int>;
+template class DLL_API DependentValueFields<IndependentFields<int>>;
+template class DLL_API DependentValueFields<IndependentFields<bool>>;
+template class DLL_API DependentValueFields<DependentValueFields<int*>>;
+template class DLL_API DependentValueFields<DependentValueFields<char*>>;
+template class DLL_API HasDefaultTemplateArgument<char>;
+template class DLL_API DependentValueFieldForArray<char[3]>;
+template class DLL_API HasDefaultTemplateArgument<const char*, double>;
+template class DLL_API HasDefaultTemplateArgument<float, double>;
+template class DLL_API HasDefaultTemplateArgument<T2*, double>;
+template class DLL_API HasDefaultTemplateArgument<T1*, double>;
+template class DLL_API HasDefaultTemplateArgument<int, double>;
+
 class DLL_API TemplateSpecializer
 {
 public:
@@ -687,8 +714,10 @@ enum class UsedInTemplatedIndexer
     Item2
 };
 
+template class DLL_API HasDefaultTemplateArgument<UsedInTemplatedIndexer, double>;
+
 template <typename T>
-class DLL_API QFlags
+class QFlags
 {
     typedef int Int;
     typedef int (*Zero);
@@ -755,6 +784,8 @@ enum class TestFlag
     Flag2
 };
 
+template class DLL_API QFlags<TestFlag>;
+
 // we optimise specialisations so that only actually used ones are wrapped
 void forceUseSpecializations(IndependentFields<int> _1, IndependentFields<bool> _2,
                              IndependentFields<T1> _3, IndependentFields<std::string> _4,
@@ -783,13 +814,11 @@ template<> inline void* qbswap<1>(const void *source, size_t count, void *dest) 
 
 // force the symbols for the template instantiations because we do not have the auto-compilation for the generated C++ source
 template class DLL_API IndependentFields<int>;
-template class DLL_API IndependentFields<bool>;
 template class DLL_API IndependentFields<T1>;
 template class DLL_API IndependentFields<const T1>;
 template class DLL_API IndependentFields<std::string>;
 template class DLL_API Base<int>;
 template class DLL_API DependentValueFields<int>;
-template class DLL_API DependentValueFields<int*>;
 template class DLL_API DependentValueFields<float>;
 template class DLL_API DependentPointerFields<float>;
 template class DLL_API VirtualTemplate<int>;
