@@ -34,6 +34,13 @@ jobs:
         shell: powershell
         run: build/intrin.ps1
 
+      - uses: actions/cache@v2
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget
+
       - name: Setup
         shell: bash
         run: |
@@ -57,7 +64,4 @@ jobs:
         with:
           name: cppsharp-${{ matrix.config.os }}-${{ matrix.config.platform }}-${{ matrix.config.cc }}
           path: |
-            bin/**/CppSharp*
-            bin/**/Std-symbols*
-            bin/**/lib/**
-            include/**/*.h
+            ~/.nuget/packages
