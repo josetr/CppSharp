@@ -22,9 +22,14 @@
     <UpToDateCheckBuilt Include="$(GeneratorOutput)" Set="Bindings" />
   </ItemGroup>
 
-  <Target Name="UpdateBindingsTimestamp" AfterTargets="PostBuildEvent">
+  <Target Name="AfterGenerateBindings" AfterTargets="PostBuildEvent">
     <Touch Files="$(GeneratorOutput)" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
+    <ItemGroup>
+      <GeneratedFiles Include="$(GenDir)$(TestName)\*" />
+      <FileWrites Include="@(GeneratedFiles)" />
+    </ItemGroup>
+    <Message Importance="high" Text="@(GeneratedFiles)" />
   </Target>
 </Project>
