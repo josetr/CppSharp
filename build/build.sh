@@ -6,7 +6,7 @@ vs=vs2019
 configuration=Release
 build_only=false
 ci=false
-verbosity=minimal
+verbosity=normal
 rootdir="$builddir/.."
 bindir="$rootdir/bin"
 objdir="$builddir/obj"
@@ -46,7 +46,6 @@ build()
 generate()
 {
   download_llvm
-
   if [ "$os" = "linux" ] || [ "$os" = "macosx" ]; then
     $builddir/premake.sh --file=$builddir/premake5.lua gmake2 --os=$os --arch=$platform --configuration=$configuration "$@"
   fi
@@ -56,8 +55,7 @@ generate()
 
 restore()
 {
-  find_msbuild
-  $msbuild $slnpath -p:Configuration=$configuration -p:Platform=$platform -v:$verbosity -t:restore 
+  dotnet msbuild $slnpath -p:Configuration=$configuration -p:Platform=$platform -v:$verbosity -t:restore 
 }
 
 test()

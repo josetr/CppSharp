@@ -11,7 +11,7 @@
     <SrcDir>$(RootDir)src\</SrcDir>
     <BaseIntermediateOutputPath>$(ObjDir)$(MSBuildProjectName)\</BaseIntermediateOutputPath>
     <BaseOutputPath>$(RootDir)bin\</BaseOutputPath>
-    <OutputPath>$(BaseOutputPath)$(Configuration)_$(PlatformTarget)\</OutputPath>
+    <OutputPath>$(BaseOutputPath)$(MSBuildProjectName)_$(Configuration)_$(PlatformTarget)\</OutputPath>
     <ActionDir>$(BuildDir)$(PremakeAction)\</ActionDir>
     <NativeProjectsDir>$(ActionDir)projects\</NativeProjectsDir>
     <TargetDir>$(OutputPath)</TargetDir>
@@ -33,4 +33,19 @@
     <GeneratorFileExtension>exe</GeneratorFileExtension>
     <DotNetCmd></DotNetCmd>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <DisableImplicitNuGetFallbackFolder>false</DisableImplicitNuGetFallbackFolder>
+    <RestoreSources>C:\Program Files\dotnet\sdk\NuGetFallbackFolder</RestoreSources>
+  </PropertyGroup>
+
+  <Target Name="Dammit" BeforeTargets="Build">
+    <Message Importance="high" Text="hello world: $(RestoreFallbackFolders)" />
+    <Message Importance="high" Text="hello world: $(RestoreAdditionalProjectFallbackFolders)" />
+  </Target>
+
+  <Target Name="Dammit2" AfterTargets="Build">
+    <Message Importance="high" Text="hello world: $(RestoreFallbackFolders)" />
+    <Message Importance="high" Text="hello world: $(RestoreAdditionalProjectFallbackFolders)" />
+  </Target>
 </Project>

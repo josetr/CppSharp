@@ -9,9 +9,6 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { os: ubuntu-20.04, platform: x64, cxx: g++-10, cc: gcc-10 }
-          - { os: macos-10.15, platform: x64, cxx: clang++, cc: clang }
-          - { os: windows-2019, platform: x86, vs: msvc }
           - { os: windows-2019, platform: x64, vs: msvc }
 
     runs-on: ${{ matrix.config.os }}
@@ -20,6 +17,8 @@ jobs:
       CC: ${{ matrix.config.cc }}
       CXX: ${{ matrix.config.cxx }}
       PLATFORM: ${{ matrix.config.platform }}
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
 
     steps:
       - uses: actions/checkout@v2
@@ -37,15 +36,12 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}-test1
 
       - name: Setup
         shell: bash
         run: |
           build/build.sh generate -platform $PLATFORM
-          build/build.sh download_llvm -platform $PLATFORM
 
       - name: Restore
         shell: bash
@@ -53,15 +49,4 @@ jobs:
 
       - name: Build
         shell: bash
-        run: build/build.sh -platform $PLATFORM -build_only
-
-      - name: Test
-        shell: bash
-        run: build/test.sh -platform $PLATFORM
-
-      - name: 'Upload Artifact'
-        uses: actions/upload-artifact@v2
-        with:
-          name: cppsharp-${{ matrix.config.os }}-${{ matrix.config.platform }}-${{ matrix.config.cc }}
-          path: |
-            ~/.nuget/packages
+        run: build/build.sh -build_only -platform $PLATFORM
