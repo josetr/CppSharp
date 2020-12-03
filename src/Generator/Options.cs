@@ -117,7 +117,7 @@ namespace CppSharp
         /// Enable this option to enable generation of finalizers.
         /// Works in both CLI and C# backends.
         /// </summary>
-        public bool GenerateFinalizers;
+        public bool GenerateFinalizers = true;
 
         public string IncludePrefix;
         public Func<TranslationUnit, string> GenerateName;
