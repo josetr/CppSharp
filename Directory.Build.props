@@ -19,6 +19,7 @@
     <WarningLevel>4</WarningLevel>
     <DotNetCmd>dotnet</DotNetCmd>
     <GeneratorFileExtension>dll</GeneratorFileExtension>
+    <DisableImplicitNuGetFallbackFolder>false</DisableImplicitNuGetFallbackFolder>
     <DotNetCmd Condition="'$(PlatformTarget)' == 'x86' AND Exists('$(MSBuildProgramFiles32)\dotnet\dotnet.exe')">"$(MSBuildProgramFiles32)\dotnet\dotnet.exe"</DotNetCmd>
     <DotNetCmd Condition="'$(PlatformTarget)' == 'x64' AND Exists('$(ProgramW6432)\dotnet\dotnet.exe')">"$(ProgramW6432)\dotnet\dotnet.exe"</DotNetCmd>
   </PropertyGroup>
