@@ -53,11 +53,12 @@ generate()
 
   $builddir/premake.sh --file=$builddir/premake5.lua $vs --os=$os --arch=$platform --configuration=$configuration
 }
-
+# -p:RestorePackagesWithLockFile
+# -p:RestoreLockedMode=true
 restore()
 {
   find_msbuild
-  $msbuild $slnpath -p:Configuration=$configuration -p:Platform=$platform -v:$verbosity -t:restore -nologo
+  $msbuild $slnpath -p:Configuration=$configuration -p:Platform=$platform -v:$verbosity -t:restore -nologo -p:RestorePackagesWithLockFile=true
 }
 
 test()

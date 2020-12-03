@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETCoreApp,Version=v3.1": {
+      "System.CodeDom": {
+        "type": "Direct",
+        "requested": "[4.7.0, )",
+        "resolved": "4.7.0",
+        "contentHash": "Hs9pw/kmvH3lXaZ1LFKj3pLQsiGfj2xo3sxSzwiLlRL6UcMZUTeCfoJ9Udalvn3yq5dLlPEZzYegrTQ1/LhPOQ=="
+      },
+      "cppsharp": {
+        "type": "Project"
+      },
+      "cppsharp.ast": {
+        "type": "Project"
+      },
+      "cppsharp.parser": {
+        "type": "Project",
+        "dependencies": {
+          "CppSharp": "1.0.0",
+          "CppSharp.AST": "1.0.0",
+          "CppSharp.Parser.CLI": "1.0.0",
+          "CppSharp.Runtime": "1.0.0"
+        }
+      },
+      "cppsharp.parser.cli": {
+        "type": "Project"
+      },
+      "cppsharp.runtime": {
+        "type": "Project"
+      }
+    }
+  }
+}
