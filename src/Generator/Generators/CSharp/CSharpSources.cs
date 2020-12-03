@@ -2177,7 +2177,7 @@ namespace CppSharp.Generators.CSharp
             }
         }
 
-        private void GenerateClassFinalizer(INamedDecl @class)
+        private void GenerateClassFinalizer(Class @class)
         {
             if (!Options.GenerateFinalizers)
                 return;
@@ -2186,7 +2186,8 @@ namespace CppSharp.Generators.CSharp
 
             WriteLine("~{0}()", @class.Name);
             WriteOpenBraceAndIndent();
-            WriteLine("Dispose(false);");
+            if (!@class.IsOpaque)
+                WriteLine("Dispose(false);");
             UnindentAndWriteCloseBrace();
 
             PopBlock(NewLineKind.BeforeNextBlock);
