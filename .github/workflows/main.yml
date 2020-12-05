@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    if:  (github.ref == 'refs/heads/master' || contains(github.ref, 'nuget')) && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository)
     strategy:
       fail-fast: false
       matrix:
