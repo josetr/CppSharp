@@ -368,8 +368,9 @@ namespace CppSharp.Types.Std
                 ctx.Before.WriteLine($@"{qualifiedBasicString}Extensions.{
                     assign.Name}({varBasicString}, {ctx.Parameter.Name});");
                 ctx.Return.Write($"{varBasicString}.{Helpers.InstanceIdentifier}");
-                ctx.Cleanup.WriteLine($@"{varBasicString}.Dispose({
-                    (!Type.IsAddress() || ctx.Parameter?.IsIndirect == true ? "false" : string.Empty)});");
+                if (!Type.IsAddress() || ctx.Parameter?.IsIndirect == true)
+                    ctx.Cleanup.WriteLine($@"{varBasicString}.__skipDestructor = true;");
+                ctx.Cleanup.WriteLine($@"{varBasicString}.Dispose();");
             }
         }
 

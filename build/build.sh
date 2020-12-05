@@ -62,7 +62,10 @@ restore()
 
 test()
 {
-  dotnet test $bindir/${configuration}_$platform/*.Tests*.dll --nologo
+  for i in {1..5}
+  do
+    dotnet test $bindir/${configuration}_$platform/*.Tests*.dll --nologo --blame -v normal
+  done
 }
 
 clean()

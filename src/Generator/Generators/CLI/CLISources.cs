@@ -254,19 +254,8 @@ namespace CppSharp.Generators.CLI
 
             PushBlock(BlockKind.DestructorBody, @class);
 
-            if (CLIGenerator.ShouldGenerateClassNativeField(@class))
-            {
-                WriteLine("delete NativePtr;");
-            }
-            else if (@class.HasNonTrivialDestructor)
-            {
-                WriteLine("if (NativePtr)");
-                WriteOpenBraceAndIndent();
-                WriteLine("auto __nativePtr = NativePtr;");
-                WriteLine("NativePtr = 0;");
-                WriteLine("delete (::{0}*) __nativePtr;", @class.QualifiedOriginalName);
-                UnindentAndWriteCloseBrace();
-            }
+            if (CLIGenerator.ShouldGenerateClassNativeField(@class) || @class.HasNonTrivialDestructor)
+                WriteLine($"this->!{@class.Name}();");
 
             PopBlock();
 
@@ -285,7 +274,17 @@ namespace CppSharp.Generators.CLI
             PushBlock(BlockKind.FinalizerBody, @class);
 
             if (CLIGenerator.ShouldGenerateClassNativeField(@class))
-                WriteLine("delete NativePtr;");
+                WriteLine("if (__ownsNativeInstance) { delete NativePtr; NativePtr = nullptr; }");
+
+            else if (@class.HasNonTrivialDestructor)
+            {
+                WriteLine("if (__ownsNativeInstance)");
+                WriteOpenBraceAndIndent();
+                WriteLine("auto __nativePtr = NativePtr;");
+                WriteLine("NativePtr = 0;");
+                WriteLine("delete (::{0}*) __nativePtr;", @class.QualifiedOriginalName);
+                UnindentAndWriteCloseBrace();
+            }
 
             PopBlock();
 

@@ -24,7 +24,7 @@ public:
     Foo(char16_t ch);
     Foo(wchar_t ch);
     Foo(const Foo& other);
-    ~Foo();
+    virtual ~Foo();
     int method();
     int operator[](int i) const;
     int operator[](unsigned int i);

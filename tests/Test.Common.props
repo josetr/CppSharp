@@ -5,6 +5,7 @@
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <IsTestBindings>false</IsTestBindings>
     <IsTestGenerator>false</IsTestGenerator>
+    <LangVersion>8.0</LangVersion>
     <IsTest>false</IsTest>
     <IsTest Condition="$(MSBuildProjectName.Contains('.Tests'))">true</IsTest>
     <IsTestGenerator Condition="$(MSBuildProjectName.EndsWith('.Gen'))">true</IsTestGenerator>

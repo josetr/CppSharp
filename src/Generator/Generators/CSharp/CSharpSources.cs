@@ -442,6 +442,8 @@ namespace CppSharp.Generators.CSharp
 
                     PushBlock(BlockKind.Field);
 
+                    WriteLine("internal bool __skipDestructor = false;");
+
                     if (@class.Layout.HasSubclassAtNonZeroOffset)
                         WriteLine($"protected int {Helpers.PrimaryBaseOffsetIdentifier};");
 
@@ -1872,7 +1874,7 @@ internal static System.WeakReference<{printedClass}> __CreateWeakReference({prin
         {
             if (method.IsDestructor)
             {
-                WriteLine("{0}.Dispose(true);", Helpers.TargetIdentifier);
+                WriteLine("{0}.Dispose();", Helpers.TargetIdentifier);
                 return;
             }
 
@@ -2238,10 +2240,13 @@ internal static System.WeakReference<{printedClass}> __CreateWeakReference({prin
                 var classInternal = TypePrinter.PrintNative(@class);
                 if (@class.IsDynamic && GetUniqueVTableMethodEntries(@class).Count != 0)
                 {
+                    WriteLine("if (__ownsNativeInstance && !__skipDestructor)");
+                    WriteOpenBraceAndIndent();
                     ClassLayout layout = (@class.IsDependent ? @class.Specializations[0] : @class).Layout;
                     for (var i = 0; i < layout.VTablePointers.Count; i++)
                         WriteLine($@"(({classInternal}*) {Helpers.InstanceIdentifier})->{
                             layout.VTablePointers[i].Name} = __VTables.Tables[{i}];");
+                    UnindentAndWriteCloseBrace();
                 }
             }
 
@@ -2253,7 +2258,7 @@ internal static System.WeakReference<{printedClass}> __CreateWeakReference({prin
                 if (!Options.CheckSymbols ||
                     Context.Symbols.FindLibraryBySymbol(dtor.Mangled, out library))
                 {
-                    WriteLine("if (disposing)");
+                    WriteLine("if (__ownsNativeInstance && !__skipDestructor)");
                     if (@class.IsDependent || dtor.IsVirtual)
                         WriteOpenBraceAndIndent();
                     else
