@@ -457,10 +457,10 @@ public unsafe class CSharpTests
     {
         IntPtr native1;
         IntPtr native2;
-        var hasVirtualDtor1Map = (IDictionary<IntPtr, HasVirtualDtor1>) typeof(
+        var hasVirtualDtor1Map = (IDictionary<IntPtr, WeakReference<HasVirtualDtor1>>) typeof(
             HasVirtualDtor1).GetField("NativeToManagedMap",
             BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
-        var hasVirtualDtor2Map = (IDictionary<IntPtr, HasVirtualDtor2>) typeof(
+        var hasVirtualDtor2Map = (IDictionary<IntPtr, WeakReference<HasVirtualDtor2>>) typeof(
             HasVirtualDtor2).GetField("NativeToManagedMap",
             BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
         using (var testNativeToManagedMap = new TestNativeToManagedMap())
@@ -481,7 +481,7 @@ public unsafe class CSharpTests
     {
         using (var testNativeToManagedMap = new TestNativeToManagedMap())
         {
-            var quxMap = (IDictionary<IntPtr, IQux>) typeof(
+            var quxMap = (IDictionary<IntPtr, WeakReference<IQux>>) typeof(
                 Qux).GetField("NativeToManagedMap",
                 BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
             var bar = new Bar();

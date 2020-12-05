@@ -449,9 +449,16 @@ namespace CppSharp.Generators.CSharp
                     var @interface = @class.Namespace.Classes.FirstOrDefault(
                         c => c.IsInterface && c.OriginalClass == @class);
                     var printedClass = (@interface ?? @class).Visit(TypePrinter);
-                    var dict = $@"global::System.Collections.Concurrent.ConcurrentDictionary<IntPtr, {
-                        printedClass}>";
+                    var dict = $@"global::System.Collections.Concurrent.ConcurrentDictionary<IntPtr, WeakReference<{
+                        printedClass}>>";
                     WriteLine("internal static readonly {0} NativeToManagedMap = new {0}();", dict);
+
+                    WriteLines($@"
+internal static System.WeakReference<{printedClass}> __CreateWeakReference({printedClass} managed)
+{{
+    return new System.WeakReference<{printedClass}>(managed);
+}}");
+                    NewLine();
                 }
                 PopBlock(NewLineKind.BeforeNextBlock);
             }
@@ -2321,11 +2328,11 @@ internal static{(@new ? " new" : string.Empty)} {printedClass} __GetOrCreateInst
 {{
     if (native == {TypePrinter.IntPtrType}.Zero)
         return null;
-    if (NativeToManagedMap.TryGetValue(native, out var managed))
+    if (NativeToManagedMap.TryGetValue(native, out var weakManagedReference) && weakManagedReference.TryGetTarget(out var managed))
         return ({printedClass})managed;
     var result = {Helpers.CreateInstanceIdentifier}(native, skipVTables);
     if (saveInstance)
-        NativeToManagedMap[native] = result;
+        NativeToManagedMap[native] = __CreateWeakReference(result);
     return result;
 }}");
                     NewLine();
@@ -2337,7 +2344,7 @@ internal static{(@new ? " new" : string.Empty)} {printedClass} __GetOrCreateInst
                         WriteLines($@"
 internal static{(@new ? " new" : string.Empty)} {printedClass} __GetInstance({TypePrinter.IntPtrType} native)
 {{
-    if (!NativeToManagedMap.TryGetValue(native, out var managed))
+    if (!(NativeToManagedMap.TryGetValue(native, out var weakManagedReference) && weakManagedReference.TryGetTarget(out var managed)))
         throw new System.Exception(""No managed instance was found"");
     var result = ({printedClass})managed;
     if (result.{Helpers.OwnsNativeInstanceIdentifier})
@@ -2450,7 +2457,7 @@ internal static{(@new ? " new" : string.Empty)} {printedClass} __GetInstance({Ty
                 if (@class.IsRefType)
                 {
                     WriteLine($"{Helpers.OwnsNativeInstanceIdentifier} = true;");
-                    WriteLine($"NativeToManagedMap[{Helpers.InstanceIdentifier}] = this;");
+                    WriteLine($"NativeToManagedMap[{Helpers.InstanceIdentifier}] = __CreateWeakReference(this);");
                 }
                 else
                 {
@@ -2885,7 +2892,7 @@ internal static{(@new ? " new" : string.Empty)} {printedClass} __GetInstance({Ty
                 @class.IsAbstractImpl ? @class.BaseClass : @class);
             WriteLine($"{Helpers.InstanceIdentifier} = Marshal.AllocHGlobal(sizeof({@internal}));");
             WriteLine($"{Helpers.OwnsNativeInstanceIdentifier} = true;");
-            WriteLine($"NativeToManagedMap[{Helpers.InstanceIdentifier}] = this;");
+            WriteLine($"NativeToManagedMap[{Helpers.InstanceIdentifier}] = __CreateWeakReference(this);");
 
             if (method.IsCopyConstructor)
             {
