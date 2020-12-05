@@ -26,45 +26,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Environment
-        if: matrix.config.vs
-        shell: bash
-        run: echo "/c/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/MSBuild/Current/Bin" >> $GITHUB_PATH
-
-      - name: Fix intrin.h file
-        if: matrix.config.vs
-        shell: powershell
-        run: build/intrin.ps1
-
-      - name: Setup
-        shell: bash
-        run: |
-          build/build.sh generate -platform $PLATFORM
-          build/build.sh download_llvm -platform $PLATFORM
-
-      - name: Restore
-        shell: bash
-        run: build/build.sh restore -platform $PLATFORM
-
-      - name: Build
-        shell: bash
-        run: build/build.sh -platform $PLATFORM -build_only
-
-      - name: Test
-        shell: bash
-        run: build/test.sh -platform $PLATFORM
-
-      - name: Pack
-        shell: bash
-        run: build/build.sh prepack -platform $PLATFORM
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: intermediate
-          path: |
-            artifacts
-            include/**/*.h
-
   create_package:
     runs-on: windows-2019
     needs: build
