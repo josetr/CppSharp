@@ -9,10 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - { os: ubuntu-20.04, platform: x64, cxx: g++-10, cc: gcc-10 }
           - { os: macos-10.15, platform: x64, cxx: clang++, cc: clang }
-          - { os: windows-2019, platform: x86, vs: msvc }
-          - { os: windows-2019, platform: x64, vs: msvc }
 
     runs-on: ${{ matrix.config.os }}
 
@@ -22,6 +19,7 @@ jobs:
       PLATFORM: ${{ matrix.config.platform }}
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DYLD_PRINT_LIBRARIES : true
 
     steps:
       - uses: actions/checkout@v2
@@ -35,6 +33,14 @@ jobs:
         if: matrix.config.vs
         shell: powershell
         run: build/intrin.ps1
+              
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            bin/Release_${{matrix.config.platform}}
+            build/obj
+          key: ${{matrix.config.os}}-${{matrix.config.platform}}-${{hashFiles('src/CppParser/*')}}-v7
 
       - name: Setup
         shell: bash
@@ -50,17 +56,14 @@ jobs:
         shell: bash
         run: build/build.sh -platform $PLATFORM -build_only
 
-      - name: Test
-        shell: bash
-        run: build/test.sh -platform $PLATFORM
-
       - name: 'Upload Artifact'
         uses: actions/upload-artifact@v2
         if: github.ref == 'refs/heads/master'
         with:
           name: cppsharp-${{ matrix.config.os }}-${{ matrix.config.platform }}-${{ matrix.config.cc }}
+          retention-days: 5
           path: |
-            bin/**/CppSharp*
-            bin/**/Std-symbols*
-            bin/**/lib/**
-            include/**/*.h
+            bin/**
+            build/gen/**
+            build/obj/**
+            build/make/**

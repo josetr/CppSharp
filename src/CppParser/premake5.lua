@@ -8,6 +8,23 @@ clang_msvc_flags =
 
 if EnableNativeProjects() then
 
+local libDir = path.join(bindir, "Release_" .. target_architecture())
+
+local pattern = path.join(libDir, "*CppSharp.CppParser*")
+
+if os.getenv("CI") == "true" and #os.matchfiles(pattern) > 0 then
+ 
+print("Using CppParser library from cache found at " .. libDir)
+
+for k, v in pairs(os.matchfiles(pattern)) do
+  print("Found file: " .. v)
+end
+
+SearchLLVM()
+CopyClangIncludes()
+
+else
+
 project "CppSharp.CppParser"
 
   kind "SharedLib"
@@ -40,6 +57,8 @@ project "CppSharp.CppParser"
   CopyClangIncludes()
 
   filter {}
+
+end
 
 project "Std-symbols"
 
