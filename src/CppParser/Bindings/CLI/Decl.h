@@ -9,6 +9,7 @@
 #include "CppSharp.h"
 #include <Decl.h>
 #include "Sources.h"
+#include "Types.h"
 
 namespace CppSharp
 {
@@ -65,7 +66,6 @@ namespace CppSharp
             ref class StatementObsolete;
             ref class Stmt;
             ref class Template;
-            ref class TemplateArgument;
             ref class TemplateParameter;
             ref class TemplateTemplateParameter;
             ref class TranslationUnit;

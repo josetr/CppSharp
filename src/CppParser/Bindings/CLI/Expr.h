@@ -22,7 +22,6 @@ namespace CppSharp
             enum class CastKind;
             enum class ObjCBridgeCastKind;
             enum class OverloadedOperatorKind;
-            enum class StmtClass;
             enum class UnaryExprOrTypeTrait;
             enum class UnaryOperatorKind;
             ref class AbstractConditionalOperator;
